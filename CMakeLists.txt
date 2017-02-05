@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 2.8) 
 
-set(CMAKE_C_COMPILER gcc)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_COMPILER g++)
-find_package(Boost 1.58.0)
+find_package(Boost 1.58.0 COMPONENTS system)
 if(Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
 	add_executable(main src/main.cpp)
+	target_link_libraries(main ${Boost_LIBRARIES})
 endif()
