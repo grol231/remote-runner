@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 2.8) 
+cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-pthread")
 find_package(Boost 1.58.0 COMPONENTS system)
+find_package (Threads)
 if(Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
 	add_executable(main src/main.cpp src/server.cpp src/server.h)
 	target_link_libraries(main ${Boost_LIBRARIES})
+	target_link_libraries (main ${CMAKE_THREAD_LIBS_INIT})
+
 endif()
