@@ -1,5 +1,5 @@
 #include <iostream>
-#include <src/server.h>
+#include "server.h"
 
 const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 
