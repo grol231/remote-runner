@@ -1,6 +1,7 @@
 #ifndef __Service_H__
 #define __Service_H__
 
+#include <unistd.h>
 #include <iostream>
 #include <thread>
 #include <memory>
@@ -12,7 +13,6 @@ public:
 	Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock) :
 		m_sock(sock)
 	{}
-
 	void StartHandling() {
 
 		boost::asio::async_read_until(*m_sock.get(),
@@ -26,7 +26,6 @@ public:
 				bytes_transferred);
 		});
 	}
-
 private:
 	void onRequestReceived(const boost::system::error_code& ec,
 		std::size_t bytes_transferred) {
@@ -53,7 +52,6 @@ private:
 				bytes_transferred);
 		});
 	}
-
 	void onResponseSent(const boost::system::error_code& ec,
 		std::size_t bytes_transferred) {
 		if (ec != 0) {
@@ -64,32 +62,27 @@ private:
 
 		onFinish();
 	}
-
 	// Here we perform the cleanup.
 	void onFinish() {
 		delete this;
 	}
-
 	std::string ProcessRequest(boost::asio::streambuf& request) {
-
-		// In this method we parse the request, process it
-		// and prepare the request.
-
-		// Emulate CPU-consuming operations.
-		int i = 0;
-		while (i != 1000000)
-			i++;
-
-		// Emulate operations that block the thread
-		// (e.g. synch I/O operations).
-		std::this_thread::sleep_for(
-			std::chrono::milliseconds(100));
-
-		// Prepare and return the response message.
+        std::string data;
+		std::istream(&request) >> data;
+		pid_t pid = fork();
+		if(pid)
+		{
+            std::cout << "Create new process! I am parent. PID:" << pid << std::endl;
+		}
+		else
+		{
+            std::cout << "Create new process! I am child. PID:" << pid << std::endl;
+            std::cout << "Execution : " << data << std::endl;
+            execlp(data.c_str(),NULL);
+		}
 		std::string response = "Response\n";
 		return response;
 	}
-
 private:
 	std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
 	std::string m_response;
