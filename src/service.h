@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <thread>
+#include <memory>
+#include <string>
 #include <boost/asio.hpp>
 
 class Service {

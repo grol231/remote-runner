@@ -1,6 +1,9 @@
 #ifndef __Server_H__
 #define __Server_H__
 
+#include <vector>
+#include <thread>
+#include <memory>
 #include <boost/asio.hpp>
 #include "acceptor.h"
 
