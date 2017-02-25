@@ -1,11 +1,10 @@
-#include <iostream>
 #include "server.h"
 
 const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 
 int main()
 {
-	unsigned short port_num = 3333;
+	unsigned short port_num = 2001;
 
 	try {
 		Server srv;
@@ -22,7 +21,7 @@ int main()
 
 		srv.Stop();
 	}
-	catch (system::system_error &e) {
+	catch (boost::system::system_error &e) {
 		std::cout << "Error occured! Error code = "
 			<< e.code() << ". Message: "
 			<< e.what();

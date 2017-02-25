@@ -1,14 +1,13 @@
 #ifndef __Server_H__
 #define __Server_H__
 
-#include <thread>
 #include <boost/asio.hpp>
 #include "acceptor.h"
 
 class Server {
 public:
 	Server() {
-		m_work.reset(new asio::io_service::work(m_ios));
+		m_work.reset(new boost::asio::io_service::work(m_ios));
 	}
 
 	// Start the server.

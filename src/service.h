@@ -1,12 +1,12 @@
 #ifndef __Service_H__
 #define __Service_H__
+
+#include <iostream>
 #include <thread>
-#include <atomic>
-#include <memory>
 #include <boost/asio.hpp>
 
 class Service {
-public:	
+public:
 	Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock) :
 		m_sock(sock)
 	{}
@@ -42,7 +42,7 @@ private:
 
 		// Initiate asynchronous write operation.
 		boost::asio::async_write(*m_sock.get(),
-			asio::buffer(m_response),
+                boost::asio::buffer(m_response),
 			[this](
 			const boost::system::error_code& ec,
 			std::size_t bytes_transferred)
@@ -91,6 +91,6 @@ private:
 private:
 	std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
 	std::string m_response;
-	asio::streambuf m_request;
+	boost::asio::streambuf m_request;
 };
-#endif 
+#endif

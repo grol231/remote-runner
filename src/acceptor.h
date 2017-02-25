@@ -1,17 +1,16 @@
 #ifndef __Acceptor_H__
 #define __Acceptor_H__
 
-#include <atomic>
 #include <boost/asio.hpp>
 #include "service.h"
 
 class Acceptor {
 public:
-	Acceptor(asio::io_service& ios, unsigned short port_num) :
+	Acceptor(boost::asio::io_service& ios, unsigned short port_num) :
 		m_ios(ios),
 		m_acceptor(m_ios,
-		asio::ip::tcp::endpoint(
-		asio::ip::address_v4::any(),
+		boost::asio::ip::tcp::endpoint(
+		boost::asio::ip::address_v4::any(),
 		port_num)),
 		m_isStopped(false)
 	{}
@@ -29,8 +28,8 @@ public:
 
 private:
 	void InitAccept() {
-		std::shared_ptr<asio::ip::tcp::socket>
-			sock(new asio::ip::tcp::socket(m_ios));
+		std::shared_ptr<boost::asio::ip::tcp::socket>
+			sock(new boost::asio::ip::tcp::socket(m_ios));
 
 		m_acceptor.async_accept(*sock.get(),
 			[this, sock](
@@ -41,7 +40,7 @@ private:
 	}
 
 	void onAccept(const boost::system::error_code& ec,
-		std::shared_ptr<asio::ip::tcp::socket> sock)
+		std::shared_ptr<boost::asio::ip::tcp::socket> sock)
 	{
 		if (ec == 0) {
 			(new Service(sock))->StartHandling();
@@ -65,8 +64,8 @@ private:
 	}
 
 private:
-	asio::io_service& m_ios;
-	asio::ip::tcp::acceptor m_acceptor;
+	boost::asio::io_service& m_ios;
+	boost::asio::ip::tcp::acceptor m_acceptor;
 	std::atomic<bool> m_isStopped;
 };
 #endif
