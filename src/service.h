@@ -58,7 +58,8 @@ private:
 				<< ec.value()
 				<< ". Message: " << ec.message();
 		}
-		onFinish();
+
+		//onFinish();
 	}
 	// Here we perform the cleanup.
 	void onFinish() {
@@ -67,9 +68,9 @@ private:
 	std::string ProcessRequest(boost::asio::streambuf& request) {
         std::string data;
 		std::istream(&request) >> data;
-		std::string response = "Response: ";
 
-		pid_t pid = fork();
+		std::string response = "Response: ";
+		pid_t pid = fork();//todo: error handling
 		int err(0);
 		if(!pid)
             err = execlp(data.c_str(),NULL);
