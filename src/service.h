@@ -2,6 +2,7 @@
 #define __Service_H__
 
 #include <unistd.h>
+#include <errno.h>
 #include <iostream>
 #include <thread>
 #include <memory>
@@ -14,7 +15,6 @@ public:
 		m_sock(sock)
 	{}
 	void StartHandling() {
-
 		boost::asio::async_read_until(*m_sock.get(),
 			m_request,
 			'\n',
@@ -37,7 +37,6 @@ private:
 			onFinish();
 			return;
 		}
-
 		// Process the request.
 		m_response = ProcessRequest(m_request);
 
@@ -59,7 +58,6 @@ private:
 				<< ec.value()
 				<< ". Message: " << ec.message();
 		}
-
 		onFinish();
 	}
 	// Here we perform the cleanup.
@@ -69,18 +67,70 @@ private:
 	std::string ProcessRequest(boost::asio::streambuf& request) {
         std::string data;
 		std::istream(&request) >> data;
+		std::string response = "Response: ";
+
 		pid_t pid = fork();
-		if(pid)
-		{
-            std::cout << "Create new process! I am parent. PID:" << pid << std::endl;
-		}
-		else
-		{
-            std::cout << "Create new process! I am child. PID:" << pid << std::endl;
-            std::cout << "Execution : " << data << std::endl;
-            execlp(data.c_str(),NULL);
-		}
-		std::string response = "Response\n";
+		int err(0);
+		if(!pid)
+            err = execlp(data.c_str(),NULL);
+        if(-1 == err)
+        {
+            switch(errno){
+            case E2BIG:
+                response += "E2BIG";
+                break;
+            case EACCES:
+                response += "EACCES";
+                break;
+            case EFAULT:
+                response += "EFAULT";
+                break;
+            case EINVAL:
+                response += "EINVAL";
+                break;
+            case EIO:
+                response += "EIO";
+                break;
+            case EISDIR:
+                response += "EISDIR";
+                break;
+            case ELIBBAD:
+                response += "ELIBBAD";
+                break;
+            case ELOOP:
+                response += "ELOOP";
+                break;
+            case EMFILE:
+                response += "EMFILE";
+                break;
+            case ENAMETOOLONG:
+                response += "ENAMETOOLONG";
+                break;
+            case ENFILE:
+                response += "ENFILE";
+                break;
+            case ENOENT:
+                response += "ENOENT";
+                break;
+            case ENOEXEC:
+                response += "ENOEXEC";
+                break;
+            case ENOMEM:
+                response += "ENOMEM";
+                break;
+            case ENOTDIR:
+                response += "ENOTDIR";
+                break;
+            case EPERM:
+                response += "EPERM";
+                break;
+            case ETXTBSY:
+                response += "ETXTBSY";
+                break;
+            default:
+                response += "Uknown error code."
+            }
+        }
 		return response;
 	}
 private:
