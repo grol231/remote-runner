@@ -9,74 +9,92 @@
 #include <string>
 #include <boost/asio.hpp>
 
-class Service {
+class Service
+{
 public:
 	Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock) :
 		m_sock(sock)
 	{}
-	void StartHandling() {
+	void StartHandling()
+	{
 		boost::asio::async_read_until(*m_sock.get(),
 			m_request,
 			'\n',
-			[this](
-			const boost::system::error_code& ec,
-			std::size_t bytes_transferred)
-		{
-			onRequestReceived(ec,
-				bytes_transferred);
-		});
+			[this](const boost::system::error_code& ec,
+                std::size_t bytes_transferred)
+            {
+                onRequestReceived(ec,bytes_transferred);
+            }
+        );
 	}
 private:
 	void onRequestReceived(const boost::system::error_code& ec,
-		std::size_t bytes_transferred) {
-		if (ec != 0) {
+		std::size_t bytes_transferred)
+    {
+		if (ec != 0)
+		{
 			std::cout << "Error occured! Error code = "
 				<< ec.value()
 				<< ". Message: " << ec.message();
-
 			onFinish();
 			return;
 		}
-		// Process the request.
+		std::string request;
+		std::istream(&m_request) >> request;
+		//std::istream(&request) >> data;
+		std::cout << "Request:" << request << std::endl;
 		m_response = ProcessRequest(m_request);
-
-		// Initiate asynchronous write operation.
 		boost::asio::async_write(*m_sock.get(),
-                boost::asio::buffer(m_response),
-			[this](
-			const boost::system::error_code& ec,
-			std::size_t bytes_transferred)
-		{
-			onResponseSent(ec,
-				bytes_transferred);
-		});
+            boost::asio::buffer(m_response),
+			[this](const boost::system::error_code& ec,
+                std::size_t bytes_transferred)
+            {
+                onResponseSent(ec, bytes_transferred);
+            }
+        );
 	}
 	void onResponseSent(const boost::system::error_code& ec,
-		std::size_t bytes_transferred) {
-		if (ec != 0) {
+		std::size_t bytes_transferred)
+    {
+		if (ec != 0)
+		{
 			std::cout << "Error occured! Error code = "
 				<< ec.value()
 				<< ". Message: " << ec.message();
 		}
-
-		//onFinish();
+		boost::asio::async_read_until(*m_sock.get(),
+			m_request,
+			'\n',
+			[this](const boost::system::error_code& ec,
+                std::size_t bytes_transferred)
+            {
+                onRequestReceived(ec, bytes_transferred);
+            }
+        );
+//        //onFinish();
 	}
-	// Here we perform the cleanup.
-	void onFinish() {
+	void onFinish()
+	{
 		delete this;
 	}
-	std::string ProcessRequest(boost::asio::streambuf& request) {
+	std::string ProcessRequest(boost::asio::streambuf& request)
+	{
         std::string data;
 		std::istream(&request) >> data;
-
-		std::string response = "Response: ";
+		std::string response = "Response";
 		pid_t pid = fork();//todo: error handling
 		int err(0);
-		if(!pid)
+		if(!pid){
             err = execlp(data.c_str(),NULL);
+            response += "-child:";
+		}else{
+            response += "-parent:";
+		}
+
         if(-1 == err)
         {
-            switch(errno){
+            switch(errno)
+            {
             case E2BIG:
                 response += "E2BIG";
                 break;
@@ -129,9 +147,14 @@ private:
                 response += "ETXTBSY";
                 break;
             default:
-                response += "Uknown error code."
+                response += "Uknown error code.";
             }
         }
+        else
+        {
+            response += "success";
+        }
+        response += "\n";
 		return response;
 	}
 private:

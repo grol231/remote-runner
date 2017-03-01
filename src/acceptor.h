@@ -7,7 +7,8 @@
 #include <boost/asio.hpp>
 #include "service.h"
 
-class Acceptor {
+class Acceptor
+{
 public:
 	Acceptor(boost::asio::io_service& ios, unsigned short port_num) :
 		m_ios(ios),
@@ -19,15 +20,18 @@ public:
         ),
 		m_isStopped(false)
 	{}
-	void Start() {
+	void Start()
+	{
 		m_acceptor.listen();
 		InitAccept();
 	}
-	void Stop() {
+	void Stop()
+	{
 		m_isStopped.store(true);
 	}
 private:
-	void InitAccept() {
+	void InitAccept()
+	{
 		std::shared_ptr<boost::asio::ip::tcp::socket>
 			sock(new boost::asio::ip::tcp::socket(m_ios));
 		m_acceptor.async_accept(*sock.get(),
@@ -40,18 +44,22 @@ private:
 	void onAccept(const boost::system::error_code& ec,
 		std::shared_ptr<boost::asio::ip::tcp::socket> sock)
 	{
-		if (ec == 0) {
+		if (ec == 0)
+		{
 			(new Service(sock))->StartHandling();
 		}
-		else {
+		else
+		{
 			std::cout << "Error occured! Error code = "
 				<< ec.value()
 				<< ". Message: " << ec.message();
 		}
-		if (!m_isStopped.load()) {
+		if (!m_isStopped.load())
+		{
 			InitAccept();
 		}
-		else {
+		else
+		{
 			m_acceptor.close();
 		}
 	}
