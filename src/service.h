@@ -39,10 +39,6 @@ private:
 			onFinish();
 			return;
 		}
-		std::string request;
-		std::istream(&m_request) >> request;
-		//std::istream(&request) >> data;
-		std::cout << "Request:" << request << std::endl;
 		m_response = ProcessRequest(m_request);
 		boost::asio::async_write(*m_sock.get(),
             boost::asio::buffer(m_response),
@@ -71,7 +67,7 @@ private:
                 onRequestReceived(ec, bytes_transferred);
             }
         );
-//        //onFinish();
+        //onFinish();
 	}
 	void onFinish()
 	{
@@ -82,8 +78,14 @@ private:
         std::string data;
 		std::istream(&request) >> data;
 		std::string response = "Response";
+		std::cout << "Request:" << data << std::endl;
 		pid_t pid = fork();//todo: error handling
 		int err(0);
+		if(pid < 0)
+		{
+            response += ":fork fail!";
+            return response;
+		}
 		if(!pid){
             err = execlp(data.c_str(),NULL);
             response += "-child:";
