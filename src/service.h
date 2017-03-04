@@ -25,6 +25,17 @@ public:
             {
                 if(bytes_transferred > 1) //FIXME: This is crutch!
                     onRequestReceived(ec,bytes_transferred);
+                if(0 != ec)
+                {
+                    if(boost::asio::error::operation_aborted == ec)
+                    {
+                        std::cout << "Operation aborted!" << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "Uknown operation error!" << std::endl;
+                    }
+                }
             }
         );
 	}
@@ -37,7 +48,7 @@ private:
 			std::cout << "Error occured! Error code = "
 				<< ec.value()
 				<< ". Message: " << ec.message();
-			onFinish();
+			//onFinish();
 			return;
 		}
 		m_response = ProcessRequest(m_request);
@@ -62,10 +73,10 @@ private:
 		StartHandling();
         //onFinish();
 	}
-	void onFinish()
+	/*void onFinish()
 	{
 		delete this;
-	}
+	}*/
 	std::string ProcessRequest(boost::asio::streambuf& request)
 	{
         std::string data;

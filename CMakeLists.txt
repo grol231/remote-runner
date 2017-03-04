@@ -7,7 +7,7 @@ find_package(Boost 1.58.0 COMPONENTS system)
 find_package (Threads)
 if(Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
-	add_executable(main src/main.cpp src/server.h src/acceptor.h src/service.h)
+	add_executable(main src/main.cpp src/server.h src/acceptor.h src/service.h src/config.h src/application.h)
 	target_link_libraries(main ${Boost_LIBRARIES})
 	target_link_libraries (main ${CMAKE_THREAD_LIBS_INIT})
 
