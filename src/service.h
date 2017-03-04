@@ -23,7 +23,8 @@ public:
 			[this](const boost::system::error_code& ec,
                 std::size_t bytes_transferred)
             {
-                onRequestReceived(ec,bytes_transferred);
+                if(bytes_transferred > 1) //FIXME: This is crutch!
+                    onRequestReceived(ec,bytes_transferred);
             }
         );
 	}
@@ -58,15 +59,7 @@ private:
 				<< ec.value()
 				<< ". Message: " << ec.message();
 		}
-		boost::asio::async_read_until(*m_sock.get(),
-			m_request,
-			'\n',
-			[this](const boost::system::error_code& ec,
-                std::size_t bytes_transferred)
-            {
-                onRequestReceived(ec, bytes_transferred);
-            }
-        );
+		StartHandling();
         //onFinish();
 	}
 	void onFinish()
@@ -86,10 +79,14 @@ private:
             response += ":fork fail!";
             return response;
 		}
-		if(!pid){
+		if(!pid)
+		{
             err = execlp(data.c_str(),NULL);
-            response += "-child:";
-		}else{
+            perror("child");
+            exit(1);
+		}
+		else
+		{
             response += "-parent:";
 		}
 
