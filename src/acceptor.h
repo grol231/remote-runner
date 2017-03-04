@@ -28,6 +28,7 @@ public:
 	void Stop()
 	{
 		m_isStopped.store(true);
+		//sock.shutdown(error::shutdawn_send)
 	}
 private:
 	void InitAccept()

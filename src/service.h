@@ -23,8 +23,6 @@ public:
 			[this](const boost::system::error_code& ec,
                 std::size_t bytes_transferred)
             {
-                if(bytes_transferred > 1) //FIXME: This is crutch!
-                    onRequestReceived(ec,bytes_transferred);
                 if(0 != ec)
                 {
                     if(boost::asio::error::operation_aborted == ec)
@@ -36,6 +34,9 @@ public:
                         std::cout << "Uknown operation error!" << std::endl;
                     }
                 }
+                if(bytes_transferred > 1) //FIXME: This is crutch!
+                    onRequestReceived(ec,bytes_transferred);
+
             }
         );
 	}

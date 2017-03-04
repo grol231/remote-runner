@@ -2,6 +2,7 @@
 #define __Config_H__
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 
@@ -62,7 +63,17 @@ public:
 private:
     void ReadConfigFile(std::string& path)
     {
-
+        std::string command;
+        std::ifstream myfile (path.c_str());
+        if (myfile.is_open())
+        {
+            while (getline(myfile,command))
+            {
+              allow_commands_.push_back(command);
+              std::cout << command << std::endl;
+            }
+            myfile.close();
+        }
     }
     unsigned short port_;
     std::vector<std::string> allow_commands_;
