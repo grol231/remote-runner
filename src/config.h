@@ -22,7 +22,9 @@ public:
             std::string command(argv[i]);
             if(std::string::npos != command.find("-path="))
             {
-                std::string path(command, command.find('='), command.size()-command.find('='));
+                //std::cout << "Found -path=!" << std::endl;
+                std::string path(command, command.find('=')+1, command.size()-command.find('=')-1);
+                //std::cout << "path: " << path << std::endl;
                 ReadConfigFile(path);
             }
             if(std::string::npos != command.find("-log"))
@@ -31,15 +33,24 @@ public:
             }
             if(std::string::npos != command.find("-timeout="))
             {
-                std::string str_timeout(command, command.find('='), command.size()-command.find('='));
+                std::string str_timeout(command, command.find('=')+1, command.size()-command.find('=')-1);
                 timeout_ = static_cast<unsigned>(std::stoi(str_timeout));
             }
             if(std::string::npos != command.find("-port="))
             {
-                std::string str_port(command, command.find('='), command.size()-command.find('='));
+                std::string str_port(command, command.find('=')+1, command.size()-command.find('=')-1);
                 port_ = static_cast<unsigned>(std::stoi(str_port));
             }
         }
+        std::cout << "timeout:" << timeout_ << std::endl;
+        std::cout << "logging:" << std::string((logging_)?"true":"false") << std::endl;
+        std::cout << "port:" << port_ << std::endl;
+        std::cout << "allow commands:";
+        for(auto& i : allow_commands_)
+        {
+            std::cout << i << " ";
+        }
+        std::cout << std::endl;
     }
     Config(const Config&) = delete;
     Config& operator=(const Config&) = delete;
@@ -69,8 +80,10 @@ private:
         {
             while (getline(myfile,command))
             {
-              allow_commands_.push_back(command);
-              std::cout << command << std::endl;
+                if(command.size() <= 1)//FIXME: This is crutch!
+                    continue;
+                allow_commands_.push_back(command);
+                //std::cout << command << std::endl;
             }
             myfile.close();
         }
