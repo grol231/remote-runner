@@ -10,7 +10,7 @@
 class Acceptor
 {
 public:
-	Acceptor(boost::asio::io_service& ios, unsigned short port_num) :
+	Acceptor(boost::asio::io_service& ios, unsigned short port_num,const std::vector<std::string>& allow_commands) :
 		m_ios(ios),
 		m_acceptor(m_ios,
             boost::asio::ip::tcp::endpoint(
@@ -18,25 +18,29 @@ public:
                 port_num
             )
         ),
-		m_isStopped(false)
+		m_isStopped(false),
+		m_allow_commands(allow_commands)
 	{}
 	void Start()
 	{
+        std::cout << "Start" << std::endl;
 		m_acceptor.listen();
 		InitAccept();
 	}
 	void Stop()
 	{
+        std::cout << "Stop" << std::endl;
 		m_isStopped.store(true);
 		//sock.shutdown(error::shutdawn_send)
 	}
 private:
 	void InitAccept()
 	{
+        std::cout << "InitAccept" << std::endl;
 		std::shared_ptr<boost::asio::ip::tcp::socket>
 			sock(new boost::asio::ip::tcp::socket(m_ios));
 		m_acceptor.async_accept(*sock.get(),
-			[this, sock](
+			[this, sock]( //TODO:Allow_commands must be a shared_ptr.
 			const boost::system::error_code& error)
 		{
 			onAccept(error, sock);
@@ -45,9 +49,10 @@ private:
 	void onAccept(const boost::system::error_code& ec,
 		std::shared_ptr<boost::asio::ip::tcp::socket> sock)
 	{
+        std::cout << "onAccept" << std::endl;
 		if (ec == 0)
 		{
-			(new Service(sock))->StartHandling();
+			(new Service(sock,m_allow_commands))->StartHandling();
 		}
 		else
 		{
@@ -68,5 +73,6 @@ private:
 	boost::asio::io_service& m_ios;
 	boost::asio::ip::tcp::acceptor m_acceptor;
 	std::atomic<bool> m_isStopped;
+    std::vector<std::string> m_allow_commands;
 };
 #endif

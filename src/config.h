@@ -6,13 +6,13 @@
 #include <vector>
 #include <string>
 
-const unsigned short PORT_NUM = 12345;
+const unsigned short DEFAULT_PORT_NUM = 12345;
 
 class Config
 {
 public:
     Config(int argc, char* argv[])
-    :port_(PORT_NUM),
+    :port_(DEFAULT_PORT_NUM),
     allow_commands_(),
     timeout_(0),
     logging_(false)
@@ -89,7 +89,7 @@ private:
         }
     }
     unsigned short port_;
-    std::vector<std::string> allow_commands_;
+    std::vector<std::string> allow_commands_;//TODO:Use shared_ptr!
     int timeout_; //FIXME: std::chrono
     bool logging_;
 };

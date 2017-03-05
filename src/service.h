@@ -12,11 +12,13 @@
 class Service
 {
 public:
-	Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock) :
-		m_sock(sock)
+	Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock, std::vector<std::string>& allow_commands) :
+		m_sock(sock),
+		m_allow_commands(allow_commands)
 	{}
 	void StartHandling()
 	{
+        std::cout << "StartHandling" << std::endl;
 		boost::asio::async_read_until(*m_sock.get(),
 			m_request,
 			'\n',
@@ -33,9 +35,24 @@ public:
                     {
                         std::cout << "Uknown operation error!" << std::endl;
                     }
+                    m_request.consume(bytes_transferred);
                 }
-                if(bytes_transferred > 1) //FIXME: This is crutch!
-                    onRequestReceived(ec,bytes_transferred);
+                else
+                {
+                    if(bytes_transferred > 1) //FIXME: This is crutch!
+                    {
+                        onRequestReceived(ec,bytes_transferred);
+                    }
+                    else
+                    {
+                        std::cout << "bytes_transferred:" << bytes_transferred << std::endl;
+                        //std::string data;
+                        //std::istream (&m_request) >> data;
+                        //std::cout << "data:" << data << std::endl;
+                        m_request.consume(bytes_transferred);
+                        StartHandling();
+                    }
+                }
 
             }
         );
@@ -44,6 +61,7 @@ private:
 	void onRequestReceived(const boost::system::error_code& ec,
 		std::size_t bytes_transferred)
     {
+        std::cout << "onRequestReceived" << std::endl;
 		if (ec != 0)
 		{
 			std::cout << "Error occured! Error code = "
@@ -65,6 +83,7 @@ private:
 	void onResponseSent(const boost::system::error_code& ec,
 		std::size_t bytes_transferred)
     {
+        std::cout << "onResponseSent" << std::endl;
 		if (ec != 0)
 		{
 			std::cout << "Error occured! Error code = "
@@ -80,10 +99,18 @@ private:
 	}*/
 	std::string ProcessRequest(boost::asio::streambuf& request)
 	{
+        std::cout << "ProcessRequest" << std::endl;
         std::string data;
 		std::istream(&request) >> data;
 		std::string response = "Response";
 		std::cout << "Request:" << data << std::endl;
+		/*
+		if(m_allow_commands.end() == std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
+		{
+            std::cout << "Not allow command!" << std::endl;
+            return response+":not allow command!";
+		}
+		*/
 		pid_t pid = fork();//todo: error handling
 		int err(0);
 		if(pid < 0)
@@ -172,5 +199,6 @@ private:
 	std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
 	std::string m_response;
 	boost::asio::streambuf m_request;
+	std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
 };
 #endif
