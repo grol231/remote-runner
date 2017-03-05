@@ -46,9 +46,6 @@ public:
                     else
                     {
                         std::cout << "bytes_transferred:" << bytes_transferred << std::endl;
-                        //std::string data;
-                        //std::istream (&m_request) >> data;
-                        //std::cout << "data:" << data << std::endl;
                         m_request.consume(bytes_transferred);
                         StartHandling();
                     }
@@ -104,13 +101,11 @@ private:
 		std::istream(&request) >> data;
 		std::string response = "Response";
 		std::cout << "Request:" << data << std::endl;
-		/*
 		if(m_allow_commands.end() == std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
 		{
             std::cout << "Not allow command!" << std::endl;
             return response+":not allow command!";
 		}
-		*/
 		pid_t pid = fork();//todo: error handling
 		int err(0);
 		if(pid < 0)
