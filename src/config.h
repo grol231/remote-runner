@@ -7,6 +7,7 @@
 #include <string>
 
 const unsigned short DEFAULT_PORT_NUM = 12345;
+const unsinged int DEFAULT_TIMEOUT = 20;
 
 class Config
 {
@@ -14,7 +15,7 @@ public:
     Config(int argc, char* argv[])
     :port_(DEFAULT_PORT_NUM),
     allow_commands_(),
-    timeout_(0),
+    timeout_(DEFAULT_TIMEOUT),
     logging_(false)
     {
         for(unsigned i = 0; argc > i; ++i)
@@ -94,7 +95,7 @@ private:
     }
     unsigned short port_;
     std::vector<std::string> allow_commands_;//TODO:Use shared_ptr!
-    int timeout_; //FIXME: std::chrono
+    unsigned int timeout_; //FIXME: std::chrono
     bool logging_;
 };
 #endif

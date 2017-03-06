@@ -11,7 +11,8 @@ class Acceptor
 {
 public:
     Acceptor(boost::asio::io_service& ios, unsigned short port_num,
-         const std::vector<std::string>& allow_commands) :
+         const std::vector<std::string>& allow_commands,
+        unsigned int timeout) :
         m_ios(ios),
         m_acceptor(m_ios,
             boost::asio::ip::tcp::endpoint(
@@ -20,7 +21,8 @@ public:
             )
         ),
         m_isStopped(false),
-        m_allow_commands(allow_commands)
+        m_allow_commands(allow_commands),
+        m_timeout(timeout)
     {}
     void Start()
     {
@@ -53,7 +55,7 @@ private:
         std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
-            (new Service(sock,m_allow_commands))->StartHandling();
+            (new Service(sock,m_allow_commands,m_timeout))->StartHandling();
         }
         else
         {
@@ -75,5 +77,6 @@ private:
     boost::asio::ip::tcp::acceptor m_acceptor;
     std::atomic<bool> m_isStopped;
     std::vector<std::string> m_allow_commands;
+    unsigned int m_timeout;
 };
 #endif

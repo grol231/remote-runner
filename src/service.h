@@ -13,9 +13,11 @@ class Service
 {
 public:
     Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock, 
-        std::vector<std::string>& allow_commands) :
+        std::vector<std::string>& allow_commands,
+        unsigned int timeout) :
             m_sock(sock),
-            m_allow_commands(allow_commands)
+            m_allow_commands(allow_commands),
+            m_timeout(timeout)
     {}
     void StartHandling()
     {

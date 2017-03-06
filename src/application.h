@@ -39,7 +39,8 @@ public:
         {
             std::cout << "Thread pool size:" << thread_pool_size << std::endl;
         }
-        srv->Start(config->Port(), thread_pool_size, config->AllowCommands());
+        srv->Start(config->Port(), thread_pool_size,
+            config->AllowCommands(),config->Timeout());
         th->join();
     }
 };
