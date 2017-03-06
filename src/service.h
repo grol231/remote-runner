@@ -101,16 +101,16 @@ private:
 		std::istream(&request) >> data;
 		std::string response = "Response";
 		std::cout << "Request:" << data << std::endl;
-		if(m_allow_commands.end() == std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
+		if(!m_allow_commands.empty() && m_allow_commands.end() == std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
 		{
             std::cout << "Not allow command!" << std::endl;
-            return response+":not allow command!";
+            return response+":not allow command!\n";
 		}
 		pid_t pid = fork();//todo: error handling
 		int err(0);
 		if(pid < 0)
 		{
-            response += ":fork fail!";
+            response += ":fork fail!\n";
             return response;
 		}
 		if(!pid)
