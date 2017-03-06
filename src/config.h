@@ -7,7 +7,7 @@
 #include <string>
 
 const unsigned short DEFAULT_PORT_NUM = 12345;
-const unsinged int DEFAULT_TIMEOUT = 20;
+const unsigned int DEFAULT_TIMEOUT = 20; //TODO: Use std::chrono::seconds
 
 class Config
 {
@@ -24,7 +24,7 @@ public:
             if(std::string::npos != command.find("-path="))
             {
                 //std::cout << "Found -path=!" << std::endl;
-                std::string path(command, 
+                std::string path(command,
                     command.find('=')+1, command.size()-command.find('=')-1);
                 //std::cout << "path: " << path << std::endl;
                 ReadConfigFile(path);
@@ -35,7 +35,7 @@ public:
             }
             if(std::string::npos != command.find("-timeout="))
             {
-                std::string str_timeout(command, 
+                std::string str_timeout(command,
                     command.find('=')+1, command.size()-command.find('=')-1);
                 timeout_ = static_cast<unsigned>(std::stoi(str_timeout));
             }
@@ -47,7 +47,7 @@ public:
             }
         }
         std::cout << "timeout:" << timeout_ << std::endl;
-        std::cout << "logging:" 
+        std::cout << "logging:"
             << std::string((logging_)?"true":"false") << std::endl;
         std::cout << "port:" << port_ << std::endl;
         std::cout << "allow commands:";
@@ -64,7 +64,7 @@ public:
     {
         return port_;
     }
-    const unsigned Timeout() const
+    const unsigned int Timeout() const
     {
         return timeout_;
     }

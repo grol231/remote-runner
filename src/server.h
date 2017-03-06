@@ -14,12 +14,13 @@ public:
     {
         m_work.reset(new boost::asio::io_service::work(m_ios));
     }
-    void Start(unsigned short port_num, 
-        unsigned int thread_pool_size, 
-        const std::vector<std::string>& allow_commands)
+    void Start(unsigned short port_num,
+        unsigned int thread_pool_size,
+        const std::vector<std::string>& allow_commands,
+        unsigned int timeout)
     {
         assert(thread_pool_size > 0);
-        acc.reset(new Acceptor(m_ios, port_num, allow_commands, m_timeout));
+        acc.reset(new Acceptor(m_ios, port_num, allow_commands, timeout));
         acc->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
         {
@@ -43,6 +44,5 @@ private:
     std::unique_ptr<boost::asio::io_service::work> m_work;
     std::unique_ptr<Acceptor> acc;
     std::vector<std::unique_ptr<std::thread>> m_thread_pool;
-    unsigned int m_timeout;
 };
 #endif

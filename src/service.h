@@ -1,23 +1,28 @@
 #ifndef __Service_H__
 #define __Service_H__
 
+#include <signal.h>
 #include <unistd.h>
 #include <errno.h>
 #include <iostream>
 #include <thread>
 #include <memory>
 #include <string>
+#include <chrono>
 #include <boost/asio.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 class Service
 {
 public:
-    Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock, 
+    Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,
         std::vector<std::string>& allow_commands,
-        unsigned int timeout) :
+        unsigned int timeout,
+        boost::asio::io_service& ios) :
             m_sock(sock),
             m_allow_commands(allow_commands),
-            m_timeout(timeout)
+            m_timeout(timeout),
+            m_ios(ios)
     {}
     void StartHandling()
     {
@@ -48,7 +53,7 @@ public:
                     }
                     else
                     {
-                        std::cout << "bytes_transferred:" 
+                        std::cout << "bytes_transferred:"
                             << bytes_transferred << std::endl;
                         m_request.consume(bytes_transferred);
                         StartHandling();
@@ -101,10 +106,10 @@ private:
     {
         std::cout << "ProcessRequest" << std::endl;
         std::string data;
-        std::istream(&request) >> data 
+        std::istream(&request) >> data;
         std::string response = "Response";
         std::cout << "Request:" << data << std::endl;
-        if(!m_allow_commands.empty() && 
+        if(!m_allow_commands.empty() &&
             m_allow_commands.end()
             ==
             std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
@@ -127,6 +132,14 @@ private:
         }
         else
         {
+            boost::asio::steady_timer t(m_ios);
+            t.expires_from_now(std::chrono::seconds(5));
+            t.async_wait([](){
+                std::cout << "Hello world!" std::endl;
+            });
+//            t.async_wait([pid](){
+//                kill(pid,SIGKILL);
+//            });
             response += "-parent:";
         }
         if(-1 == err)
@@ -200,5 +213,7 @@ private:
     std::string m_response;
     boost::asio::streambuf m_request;
     std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
+    unsigned int m_timeout;
+    boost::asio::io_service& m_ios;
 };
 #endif

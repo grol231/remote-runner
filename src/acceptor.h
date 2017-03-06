@@ -55,7 +55,7 @@ private:
         std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
-            (new Service(sock,m_allow_commands,m_timeout))->StartHandling();
+            (new Service(sock, m_allow_commands, m_timeout, m_ios))->StartHandling();
         }
         else
         {
