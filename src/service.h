@@ -12,17 +12,17 @@
 class Service
 {
 public:
-	Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock, std::vector<std::string>& allow_commands) :
-		m_sock(sock),
-		m_allow_commands(allow_commands)
-	{}
-	void StartHandling()
-	{
+        Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock, std::vector<std::string>& allow_commands) :
+                m_sock(sock),
+                m_allow_commands(allow_commands)
+        {}
+        void StartHandling()
+        {
         std::cout << "StartHandling" << std::endl;
-		boost::asio::async_read_until(*m_sock.get(),
-			m_request,
-			'\n',
-			[this](const boost::system::error_code& ec,
+                boost::asio::async_read_until(*m_sock.get(),
+                        m_request,
+                        '\n',
+                        [this](const boost::system::error_code& ec,
                 std::size_t bytes_transferred)
             {
                 if(0 != ec)
@@ -53,76 +53,76 @@ public:
 
             }
         );
-	}
+        }
 private:
-	void onRequestReceived(const boost::system::error_code& ec,
-		std::size_t bytes_transferred)
+        void onRequestReceived(const boost::system::error_code& ec,
+                std::size_t bytes_transferred)
     {
         std::cout << "onRequestReceived" << std::endl;
-		if (ec != 0)
-		{
-			std::cout << "Error occured! Error code = "
-				<< ec.value()
-				<< ". Message: " << ec.message();
-			//onFinish();
-			return;
-		}
-		m_response = ProcessRequest(m_request);
-		boost::asio::async_write(*m_sock.get(),
+                if (ec != 0)
+                {
+                        std::cout << "Error occured! Error code = "
+                                << ec.value()
+                                << ". Message: " << ec.message();
+                        //onFinish();
+                        return;
+                }
+                m_response = ProcessRequest(m_request);
+                boost::asio::async_write(*m_sock.get(),
             boost::asio::buffer(m_response),
-			[this](const boost::system::error_code& ec,
+                        [this](const boost::system::error_code& ec,
                 std::size_t bytes_transferred)
             {
                 onResponseSent(ec, bytes_transferred);
             }
         );
-	}
-	void onResponseSent(const boost::system::error_code& ec,
-		std::size_t bytes_transferred)
+        }
+        void onResponseSent(const boost::system::error_code& ec,
+                std::size_t bytes_transferred)
     {
         std::cout << "onResponseSent" << std::endl;
-		if (ec != 0)
-		{
-			std::cout << "Error occured! Error code = "
-				<< ec.value()
-				<< ". Message: " << ec.message();
-		}
-		StartHandling();
+                if (ec != 0)
+                {
+                        std::cout << "Error occured! Error code = "
+                                << ec.value()
+                                << ". Message: " << ec.message();
+                }
+                StartHandling();
         //onFinish();
-	}
-	/*void onFinish()
-	{
-		delete this;
-	}*/
-	std::string ProcessRequest(boost::asio::streambuf& request)
-	{
+        }
+        /*void onFinish()
+        {
+                delete this;
+        }*/
+        std::string ProcessRequest(boost::asio::streambuf& request)
+        {
         std::cout << "ProcessRequest" << std::endl;
         std::string data;
-		std::istream(&request) >> data;
-		std::string response = "Response";
-		std::cout << "Request:" << data << std::endl;
-		if(!m_allow_commands.empty() && m_allow_commands.end() == std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
-		{
+        std::istream(&request) >> data;
+        std::string response = "Response";
+        std::cout << "Request:" << data << std::endl;
+        if(!m_allow_commands.empty() && m_allow_commands.end() == std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
+        {
             std::cout << "Not allow command!" << std::endl;
             return response+":not allow command!\n";
-		}
-		pid_t pid = fork();//todo: error handling
-		int err(0);
-		if(pid < 0)
-		{
+        }
+        pid_t pid = fork();//todo: error handling
+        int err(0);
+        if(pid < 0)
+        {
             response += ":fork fail!\n";
             return response;
-		}
-		if(!pid)
-		{
+        }
+        if(!pid)
+        {
             err = execlp(data.c_str(),NULL);
             perror("child");
             exit(1);
-		}
-		else
-		{
+        }
+        else
+        {
             response += "-parent:";
-		}
+        }
 
         if(-1 == err)
         {
@@ -188,12 +188,12 @@ private:
             response += "success";
         }
         response += "\n";
-		return response;
-	}
+                return response;
+        }
 private:
-	std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
-	std::string m_response;
-	boost::asio::streambuf m_request;
-	std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
+        std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
+        std::string m_response;
+        boost::asio::streambuf m_request;
+        std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
 };
 #endif

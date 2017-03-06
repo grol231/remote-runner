@@ -1,4 +1,4 @@
-#ifndef __Config_H__
+ifndef __Config_H__
 #define __Config_H__
 
 #include <iostream>
