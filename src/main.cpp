@@ -9,7 +9,8 @@ int main(int argc, char* argv[])
 {
     try
     {
-        std::unique_ptr<Config> config(new Config(argc, argv));//TODO:Use shared_ptr!
+        std::unique_ptr<Config> config(new Config(argc, argv));
+        //TODO:Use shared_ptr!
         Application app(config);
     }
     catch(boost::system::system_error& e)

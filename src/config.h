@@ -1,4 +1,4 @@
-ifndef __Config_H__
+#ifndef __Config_H__
 #define __Config_H__
 
 #include <iostream>
@@ -23,7 +23,8 @@ public:
             if(std::string::npos != command.find("-path="))
             {
                 //std::cout << "Found -path=!" << std::endl;
-                std::string path(command, command.find('=')+1, command.size()-command.find('=')-1);
+                std::string path(command, 
+                    command.find('=')+1, command.size()-command.find('=')-1);
                 //std::cout << "path: " << path << std::endl;
                 ReadConfigFile(path);
             }
@@ -33,17 +34,20 @@ public:
             }
             if(std::string::npos != command.find("-timeout="))
             {
-                std::string str_timeout(command, command.find('=')+1, command.size()-command.find('=')-1);
+                std::string str_timeout(command, 
+                    command.find('=')+1, command.size()-command.find('=')-1);
                 timeout_ = static_cast<unsigned>(std::stoi(str_timeout));
             }
             if(std::string::npos != command.find("-port="))
             {
-                std::string str_port(command, command.find('=')+1, command.size()-command.find('=')-1);
+                std::string str_port(command, command.find('=')+1,
+                     command.size()-command.find('=')-1);
                 port_ = static_cast<unsigned>(std::stoi(str_port));
             }
         }
         std::cout << "timeout:" << timeout_ << std::endl;
-        std::cout << "logging:" << std::string((logging_)?"true":"false") << std::endl;
+        std::cout << "logging:" 
+            << std::string((logging_)?"true":"false") << std::endl;
         std::cout << "port:" << port_ << std::endl;
         std::cout << "allow commands:";
         for(auto& i : allow_commands_)

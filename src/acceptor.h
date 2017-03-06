@@ -10,7 +10,8 @@
 class Acceptor
 {
 public:
-    Acceptor(boost::asio::io_service& ios, unsigned short port_num,const std::vector<std::string>& allow_commands) :
+    Acceptor(boost::asio::io_service& ios, unsigned short port_num,
+         const std::vector<std::string>& allow_commands) :
         m_ios(ios),
         m_acceptor(m_ios,
             boost::asio::ip::tcp::endpoint(
