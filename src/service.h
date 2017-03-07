@@ -134,9 +134,11 @@ private:
         {
             boost::asio::steady_timer t(m_ios);
             t.expires_from_now(std::chrono::seconds(5));
-            t.async_wait([](){
-                std::cout << "Hello world!" std::endl;
+           /*
+             t.async_wait([](){
+            std::cout << "Hello world!" << std::endl;
             });
+            */
 //            t.async_wait([pid](){
 //                kill(pid,SIGKILL);
 //            });
