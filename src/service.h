@@ -132,6 +132,23 @@ private:
         }
         else
         {
+            boost::asio::deadline_timer t2(m_ios);
+            if(t2.expire_from_now(std::chrono::seconds(10000))
+            {
+                t2.async_wait([](const boost::system::error_code& ec){
+                    std::cout << "Deadline timer expires!" << std::endl;
+                });
+            }
+            else
+            {
+                std::cout << "Too late! Timer already expires!" <<  std::endl;
+            }
+            /*
+            boost::asio::steady_timer t{m_ios, std::chrono::seconds{10000}};
+            t.async_wait([](const boost::system::error_code& ec){
+                    std::cout << "Timer expires! 10000sec" << std::endl;
+                });
+            
             boost::asio::steady_timer t(m_ios);
             if(t.expires_from_now(std::chrono::seconds(10000))>0)
             {
@@ -145,10 +162,7 @@ private:
                 std::cout << "Too late, timer has already expired!" 
                     << std::endl;
             }
-            t.async_wait([pid](const boost::system::error_code& ec){
-                kill(pid,SIGKILL);
-                std::cout << "Kill child process!" << std::endl;
-            });
+            */
             response += "-parent:";
         }
         if(-1 == err)

@@ -55,7 +55,9 @@ private:
         std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
-            (new Service(sock, m_allow_commands, m_timeout, m_ios))->StartHandling();
+            (new Service(sock, m_allow_commands, m_timeout, m_ios))
+                ->StartHandling();//TOD: Use shared_ptr.
+            //Service will become the  heir from enable_shared_from_this.
         }
         else
         {
