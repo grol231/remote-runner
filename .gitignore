@@ -1,6 +1,8 @@
 /*
-!/config
-!/config/*
+/config/*
+/src/*
+!/cofig
+!/config/config.txt
 !.gitignore
 !CMakeLists.txt
 !/src

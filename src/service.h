@@ -133,15 +133,22 @@ private:
         else
         {
             boost::asio::steady_timer t(m_ios);
-            t.expires_from_now(std::chrono::seconds(5));
-           /*
-             t.async_wait([](){
-            std::cout << "Hello world!" << std::endl;
+            if(t.expires_from_now(std::chrono::seconds(10000))>0)
+            {
+                t.async_wait([pid](const boost::system::error_code& ec){
+                    kill(pid,SIGKILL);
+                    std::cout << "Kill child process!" << std::endl;
+                });   
+            }
+            else
+            {
+                std::cout << "Too late, timer has already expired!" 
+                    << std::endl;
+            }
+            t.async_wait([pid](const boost::system::error_code& ec){
+                kill(pid,SIGKILL);
+                std::cout << "Kill child process!" << std::endl;
             });
-            */
-//            t.async_wait([pid](){
-//                kill(pid,SIGKILL);
-//            });
             response += "-parent:";
         }
         if(-1 == err)
