@@ -12,7 +12,7 @@ class Acceptor
 public:
     Acceptor(boost::asio::io_service& ios, unsigned short port_num,
          const std::vector<std::string>& allow_commands,
-        unsigned int timeout) :
+        boost::posix_time::seconds timeout) :
         m_ios(ios),
         m_acceptor(m_ios,
             boost::asio::ip::tcp::endpoint(
@@ -79,6 +79,6 @@ private:
     boost::asio::ip::tcp::acceptor m_acceptor;
     std::atomic<bool> m_isStopped;
     std::vector<std::string> m_allow_commands;
-    unsigned int m_timeout;
+    boost::posix_time::seconds m_timeout;
 };
 #endif

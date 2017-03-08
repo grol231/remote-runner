@@ -5,9 +5,10 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
-const unsigned short DEFAULT_PORT_NUM = 12345;
-const unsigned int DEFAULT_TIMEOUT = 20; //TODO: Use std::chrono::seconds
+const unsigned short DEFAULT_PORT_NUM = 12345;//TODO This const puts to class.
+const boost::posix_time::seconds DEFAULT_TIMEOUT(5);
 
 class Config
 {
@@ -37,7 +38,8 @@ public:
             {
                 std::string str_timeout(command,
                     command.find('=')+1, command.size()-command.find('=')-1);
-                timeout_ = static_cast<unsigned>(std::stoi(str_timeout));
+                //TODO: Rewrite type conversion.
+                timeout_ = static_cast<boost::posix_time::seconds>(std::stoi(str_timeout));
             }
             if(std::string::npos != command.find("-port="))
             {
@@ -47,7 +49,7 @@ public:
             }
         }
         std::cout << "timeout:" << timeout_ << std::endl;
-        std::cout << "logging:"
+        std::cout << "logging:"//TODO:Rewrite!
             << std::string((logging_)?"true":"false") << std::endl;
         std::cout << "port:" << port_ << std::endl;
         std::cout << "allow commands:";
@@ -64,7 +66,7 @@ public:
     {
         return port_;
     }
-    const unsigned int Timeout() const
+    const boost::posix_time::seconds Timeout() const
     {
         return timeout_;
     }
@@ -95,7 +97,7 @@ private:
     }
     unsigned short port_;
     std::vector<std::string> allow_commands_;//TODO:Use shared_ptr!
-    unsigned int timeout_; //FIXME: std::chrono
+    boost::posix_time::seconds timeout_; //FIXME: std::chrono
     bool logging_;
 };
 #endif

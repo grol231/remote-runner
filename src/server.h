@@ -17,7 +17,7 @@ public:
     void Start(unsigned short port_num,
         unsigned int thread_pool_size,
         const std::vector<std::string>& allow_commands,
-        unsigned int timeout)
+        boost::posix_time::seconds timeout)
     {
         assert(thread_pool_size > 0);
         acc.reset(new Acceptor(m_ios, port_num, allow_commands, timeout));

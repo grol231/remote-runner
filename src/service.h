@@ -11,19 +11,25 @@
 #include <chrono>
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/error.hpp>
 
 class Service
 {
 public:
     Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,
         std::vector<std::string>& allow_commands,
-        unsigned int timeout,
+        boost::posix_time::seconds timeout,
         boost::asio::io_service& ios) :
             m_sock(sock),
             m_allow_commands(allow_commands),
             m_timeout(timeout),
-            m_ios(ios)
+            m_ios(ios),
+            m_t(m_ios)
     {}
+    ~Service(){
+        std::cout << "Service dystrict!" << std::endl;
+    }
     void StartHandling()
     {
         std::cout << "StartHandling" << std::endl;
@@ -132,37 +138,30 @@ private:
         }
         else
         {
-            boost::asio::deadline_timer t2(m_ios);
-            if(t2.expire_from_now(std::chrono::seconds(10000))
-            {
-                t2.async_wait([](const boost::system::error_code& ec){
-                    std::cout << "Deadline timer expires!" << std::endl;
-                });
-            }
-            else
-            {
+//            boost::posix_time::seconds time(m_timeout);
+//            size_t num = m_t.expires_from_now(time);
+//            if(num == 0)
+//            {
+//                std::cout << "Good! Timer is ready! Time:" << time << std::endl;
+//            }
+//            else
+//            {
+//                std::cout << "Too late! Timer has already expires!" <<  std::endl;
+//            }
+//            m_t.async_wait([](const boost::system::error_code& ec){
+//                    //TODO: Need good error handling in asynchronous operations.
+//                    if(ec == boost::asio::error::operation_aborted)
+//                        std::cout << "Times was not cacelled, take necessary action." << std::endl;
+//                    else
+//                        std::cout << "Deadline timer expires!" << std::endl;
+//            });
+            size_t num = m_t.expires_from_now(m_timeout);
+            if(0!=num)
                 std::cout << "Too late! Timer already expires!" <<  std::endl;
-            }
-            /*
-            boost::asio::steady_timer t{m_ios, std::chrono::seconds{10000}};
-            t.async_wait([](const boost::system::error_code& ec){
-                    std::cout << "Timer expires! 10000sec" << std::endl;
-                });
-            
-            boost::asio::steady_timer t(m_ios);
-            if(t.expires_from_now(std::chrono::seconds(10000))>0)
-            {
-                t.async_wait([pid](const boost::system::error_code& ec){
+            m_t.async_wait([pid](const boost::system::error_code& ec){
                     kill(pid,SIGKILL);
                     std::cout << "Kill child process!" << std::endl;
-                });   
-            }
-            else
-            {
-                std::cout << "Too late, timer has already expired!" 
-                    << std::endl;
-            }
-            */
+                });
             response += "-parent:";
         }
         if(-1 == err)
@@ -236,7 +235,8 @@ private:
     std::string m_response;
     boost::asio::streambuf m_request;
     std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
-    unsigned int m_timeout;
+    boost::posix_time::seconds m_timeout;
     boost::asio::io_service& m_ios;
+    boost::asio::deadline_timer m_t;
 };
 #endif
