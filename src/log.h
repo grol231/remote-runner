@@ -8,6 +8,7 @@
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 
+
 namespace logging = boost::log;
 namespace src = boost::log::sources;
 namespace keywords = boost::log::keywords;
