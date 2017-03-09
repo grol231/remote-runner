@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_COMPILER g++)
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-pthread")
-set(Boost_USE_STATIC_LIBS ON)
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-lpthread -lboost_log")
+#set(Boost_USE_STATIC_LIBS ON)
+ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 find_package(Boost 1.58.0 COMPONENTS system log thread 
     filesystem date_time log_setup REQUIRED)
 if(Boost_FOUND)
@@ -12,5 +13,4 @@ if(Boost_FOUND)
         src/service.h src/config.h src/application.h src/log.h)
     target_link_libraries(main ${Boost_LIBRARIES})
     target_link_libraries (main ${CMAKE_THREAD_LIBS_INIT})
-
 endif()
