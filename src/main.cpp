@@ -18,10 +18,22 @@ int main(int argc, char* argv[])
         logging::add_common_attributes();
         using namespace logging::trivial;
         src::severity_logger<severity_level> lg;
-        Log log;
-        BOOST_LOG_SEV(lg, trace) << "A trace severity message.";
-        BOOST_LOG_SEV(lg, info) << "A info severity message.";  
-        BOOST_LOG_SEV(lg, fatal) << "A fatal severity message.";
+        Logging::Log log;
+        Logging::Statistic s;
+        Logging::LogRecord r;
+        s.StopedCommandCounter = 5;
+        s.NotRunningCommandCounter = 6;
+        s.CompletedCommandCounter = 7;
+        s.CompletedCompulsorilyCommandCounter = 8;
+        s.DownloadedData = 99;
+        s.UploadedData = 999;
+        r.Command = "gnome-terminal";
+        r.Condition = "start";
+        r.Result = "success";
+        r.Note = "This is good program.";
+        BOOST_LOG_SEV(lg, trace) << Logging::ToString(s);
+        BOOST_LOG_SEV(lg, info) << Logging::ToString(s);  
+        BOOST_LOG_SEV(lg, fatal) << Logging::ToString(r);
     }
     catch(boost::system::system_error& e)
     {
@@ -36,6 +48,7 @@ int main(int argc, char* argv[])
     }
     catch(...)
     {
+
         std::cout << "Unkown error occured!" << std::endl;
     }
 	return 0;

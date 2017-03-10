@@ -14,6 +14,25 @@ namespace keywords = boost::log::keywords;
 namespace sinks = boost::log::sinks;
 
 const char* DEFAULT_LOG_FILE = "log.txt";
+namespace Logging
+{
+struct LogRecord
+{
+    std::string Command;
+    std::string Condition;
+    std::string Result;
+    std::string Note;    
+};
+
+struct Statistic
+{     
+    unsigned long long int StopedCommandCounter;
+    unsigned long long int NotRunningCommandCounter;
+    unsigned long long int CompletedCommandCounter;
+    unsigned long long int CompletedCompulsorilyCommandCounter;
+    unsigned long long int DownloadedData;
+    unsigned long long int UploadedData;
+};
 
 class Log 
 {
@@ -27,7 +46,8 @@ public:
             keywords::rotation_size = 10 * 1024 * 1024,
             keywords::time_based_rotation = 
                 sinks::file::rotation_at_time_point(0,0,0),
-            keywords::format = "%LineID% | [%TimeStamp%] | %Message%"        
+            keywords::format = 
+                "RecordID #%LineID%\n%TimeStamp%\n%Message%"        
         );
 
         logging::core::get()->set_filter
@@ -36,22 +56,31 @@ public:
         );
     }
 };
-
-struct LogRecord
+//TODO: use stream!
+static std::string ToString(const LogRecord& record)//Why static?
 {
-    std::string Command;
-    std::string Condition;
-    std::string Result;
-    std::string Note;    
+    return std::string("Command : " + record.Command + "\n" + 
+            "Condition : " + record.Condition + "\n" +
+           "Result : " +  record.Result +"\n"+ 
+           "Note : " + record.Note);
 };
-
-struct Statistic
-{     
-    unsigned long long int StopedCommandCounter;
-    unsigned long long int NotRunningCommandCounter;
-    unsigned long long int completedCommandCounter;
-    unsigned long long int completedCompulsorilyCommandCounter;
-    unsigned long long int downloadedData;
-    unsigned long long int uploadedData;
+//TODO: use stream! refactoring!
+static std::string ToString(const Statistic& s)
+{
+    std::string str;
+    str += "Command Statistic:\n    stoped = "; 
+    str += std::to_string(s.StopedCommandCounter);
+    str += "\n    not running = ";
+    str += std::to_string(s.NotRunningCommandCounter);
+    str += "\n    completed = ";
+    str += std::to_string(s.CompletedCommandCounter);
+    str += "\n    completed compulsorily = ";
+    str += std::to_string(s.CompletedCompulsorilyCommandCounter);
+    str += "\nTraffic Statistic:\n    downlowded data = ";
+    str += std::to_string(s.DownloadedData);
+    str += "\n    uploaded data = ";
+    str += std::to_string(s.UploadedData);
+    str += "\n";
+    return str;
 };
-
+}
