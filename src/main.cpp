@@ -6,8 +6,6 @@
 #include "application.h"
 #include "log.h"
 
-//using namespace boost::log;
-
 int main(int argc, char* argv[])
 {
     //TODO: Rewrite all error handling. I must make only handling error code.
@@ -15,19 +13,15 @@ int main(int argc, char* argv[])
     try
     {
         std::unique_ptr<Config> config(new Config(argc, argv));
-     /*   logging::core::get()->set_filter
-        (
-            logging::trivial::severity >= logging::trivial::info
-        );
-*/
-        //TODO:Use shared_ptr!
-      //  Application app(config);
-
+      //TODO:Use shared_ptr!
+      //Application app(config);
+        logging::add_common_attributes();
+        using namespace logging::trivial;
+        src::severity_logger<severity_level> lg;
         Log log;
-        BOOST_LOG_TRIVIAL(trace);
-        BOOST_LOG_TRIVIAL(info);       
-        BOOST_LOG_TRIVIAL(fatal);
-
+        BOOST_LOG_SEV(lg, trace) << "A trace severity message.";
+        BOOST_LOG_SEV(lg, info) << "A info severity message.";  
+        BOOST_LOG_SEV(lg, fatal) << "A fatal severity message.";
     }
     catch(boost::system::system_error& e)
     {

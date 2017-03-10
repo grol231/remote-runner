@@ -8,7 +8,6 @@
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/sources/severity_logger.hpp>
 
-
 namespace logging = boost::log;
 namespace src = boost::log::sources;
 namespace keywords = boost::log::keywords;
@@ -21,21 +20,38 @@ class Log
 public:
     Log()
     {
-        logging::add_file_log(DEFAULT_LOG_FILE);
-/*
+//        logging::add_file_log(DEFAULT_LOG_FILE);
+
         logging::add_file_log(
             keywords::file_name = DEFAULT_LOG_FILE,
             keywords::rotation_size = 10 * 1024 * 1024,
             keywords::time_based_rotation = 
                 sinks::file::rotation_at_time_point(0,0,0),
-            keywords::format = "[%TimeStamp%]: %Message%"
-        
+            keywords::format = "%LineID% | [%TimeStamp%] | %Message%"        
         );
-*/
+
         logging::core::get()->set_filter
         (
             logging::trivial::severity >= logging::trivial::info
         );
     }
+};
+
+struct LogRecord
+{
+    std::string Command;
+    std::string Condition;
+    std::string Result;
+    std::string Note;    
+};
+
+struct Statistic
+{     
+    unsigned long long int StopedCommandCounter;
+    unsigned long long int NotRunningCommandCounter;
+    unsigned long long int completedCommandCounter;
+    unsigned long long int completedCompulsorilyCommandCounter;
+    unsigned long long int downloadedData;
+    unsigned long long int uploadedData;
 };
 
