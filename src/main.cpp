@@ -8,7 +8,8 @@
 
 int main(int argc, char* argv[])
 {
-    //TODO: Rewrite all error handling. I must make only handling error code.
+    //TODO: Rewrite all error handling. 
+    //I must make only handling error code.
     //Error handling will be in log.
     try
     {
@@ -31,9 +32,12 @@ int main(int argc, char* argv[])
         r.Condition = "start";
         r.Result = "success";
         r.Note = "This is good program.";
+       // LogType.set("Statistic");
         BOOST_LOG_SEV(lg, trace) << Logging::ToString(s);
-        BOOST_LOG_SEV(lg, info) << Logging::ToString(s);  
+        BOOST_LOG_SEV(lg, info) << Logging::ToString(s);
+       // LogType.set("LogRecord");  
         BOOST_LOG_SEV(lg, fatal) << Logging::ToString(r);
+
     }
     catch(boost::system::system_error& e)
     {

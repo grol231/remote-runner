@@ -22,7 +22,8 @@ public:
         ),
         m_isStopped(false),
         m_allow_commands(allow_commands),
-        m_timeout(timeout)
+        m_timeout(timeout),
+        m_connect_counter(0)
     {}
     void Start()
     {
@@ -48,6 +49,7 @@ private:
         {
             onAccept(error, sock);
         });
+        ++m_connect_counter;
     }
     void onAccept(const boost::system::error_code& ec,
         std::shared_ptr<boost::asio::ip::tcp::socket> sock)
@@ -80,5 +82,6 @@ private:
     std::atomic<bool> m_isStopped;
     std::vector<std::string> m_allow_commands;
     boost::posix_time::seconds m_timeout;
+    unsigned long long int m_connect_counter;
 };
 #endif
