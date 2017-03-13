@@ -6,13 +6,16 @@
 #include <atomic>
 #include <boost/asio.hpp>
 #include "service.h"
+#include "log.h"
 
 class Acceptor
 {
 public:
     Acceptor(boost::asio::io_service& ios, unsigned short port_num,
          const std::vector<std::string>& allow_commands,
-        boost::posix_time::seconds timeout) :
+        boost::posix_time::seconds timeout,
+        src::severity_logger<logging::trivial::severity_level>& log
+        ) :
         m_ios(ios),
         m_acceptor(m_ios,
             boost::asio::ip::tcp::endpoint(
@@ -23,7 +26,8 @@ public:
         m_isStopped(false),
         m_allow_commands(allow_commands),
         m_timeout(timeout),
-        m_connect_counter(0)
+        m_connect_counter(0),
+        m_log(log)
     {}
     void Start()
     {
@@ -57,7 +61,8 @@ private:
         std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
-            (new Service(sock, m_allow_commands, m_timeout, m_ios))
+            (new Service(sock, m_allow_commands,
+                         m_timeout, m_ios, m_connect_counter,m_log))
                 ->StartHandling();//TOD: Use shared_ptr.
             //Service will become the  heir from enable_shared_from_this.
         }
@@ -83,5 +88,6 @@ private:
     std::vector<std::string> m_allow_commands;
     boost::posix_time::seconds m_timeout;
     unsigned long long int m_connect_counter;
+    src::severity_logger<logging::trivial::severity_level>& m_log;
 };
 #endif

@@ -6,6 +6,7 @@
 #include <memory>
 #include <boost/asio.hpp>
 #include "acceptor.h"
+#include "log.h"
 
 class Server
 {
@@ -20,7 +21,10 @@ public:
         boost::posix_time::seconds timeout)
     {
         assert(thread_pool_size > 0);
-        acc.reset(new Acceptor(m_ios, port_num, allow_commands, timeout));
+        acc.reset(new Acceptor(m_ios, port_num, 
+                    allow_commands, timeout
+                    , m_log
+                    ));
         acc->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
         {
@@ -44,5 +48,6 @@ private:
     std::unique_ptr<boost::asio::io_service::work> m_work;
     std::unique_ptr<Acceptor> acc;
     std::vector<std::unique_ptr<std::thread>> m_thread_pool;
+    src::severity_logger<logging::trivial::severity_level> m_log;
 };
 #endif

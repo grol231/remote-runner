@@ -13,6 +13,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/error.hpp>
+#include "log.h"
 
 class Service
 {
@@ -20,15 +21,23 @@ public:
     Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,
         std::vector<std::string>& allow_commands,
         boost::posix_time::seconds timeout,
-        boost::asio::io_service& ios) :
+        boost::asio::io_service& ios,
+        unsigned long long int connect_id,
+        src::severity_logger<logging::trivial::severity_level>& log) :
             m_sock(sock),
             m_allow_commands(allow_commands),
             m_timeout(timeout),
             m_ios(ios),
-            m_t(m_ios)
-    {}
+            m_t(m_ios),
+            m_connect_id(connect_id),
+            m_statistic(),
+            m_log(log)            
+    {
+        m_statistic.ConnectID = m_connect_id;
+    }
     ~Service(){
         std::cout << "Service dystrict!" << std::endl;
+
     }
     void StartHandling()
     {
@@ -81,7 +90,7 @@ private:
             //onFinish();
             return;
         }
-        m_response = ProcessRequest(m_request);
+        m_response = ProcessRequest(m_request, bytes_transferred);
         boost::asio::async_write(*m_sock.get(),
             boost::asio::buffer(m_response),
             [this](const boost::system::error_code& ec,
@@ -108,13 +117,17 @@ private:
     {
         delete this;
     }*/
-    std::string ProcessRequest(boost::asio::streambuf& request)
+    std::string ProcessRequest(boost::asio::streambuf& request,
+            std::size_t bytes_transferred)
     {
         std::cout << "ProcessRequest" << std::endl;
         std::string data;
         std::istream(&request) >> data;
         std::string response = "Response";
         std::cout << "Request:" << data << std::endl;
+        Logging::LogRecord record;
+        record.Command = data;
+        record.Condition = "start";
         if(!m_allow_commands.empty() &&
             m_allow_commands.end()
             ==
@@ -133,35 +146,31 @@ private:
         if(!pid)
         {
             err = execlp(data.c_str(),NULL);
+            ++m_statistic.NotRunningCommandCounter;
+            record.Result = "fail";
+            record.Note = "Unsuccess execution.";
             perror("child");
             exit(1);
         }
         else
         {
-//            boost::posix_time::seconds time(m_timeout);
-//            size_t num = m_t.expires_from_now(time);
-//            if(num == 0)
-//            {
-//                std::cout << "Good! Timer is ready! Time:" << time << std::endl;
-//            }
-//            else
-//            {
-//                std::cout << "Too late! Timer has already expires!" <<  std::endl;
-//            }
-//            m_t.async_wait([](const boost::system::error_code& ec){
-//                    //TODO: Need good error handling in asynchronous operations.
-//                    if(ec == boost::asio::error::operation_aborted)
-//                        std::cout << "Times was not cacelled, take necessary action." << std::endl;
-//                    else
-//                        std::cout << "Deadline timer expires!" << std::endl;
-//            });
+            ++m_statistic.RunningCommandCounter;
+            record.Result = "success";
             size_t num = m_t.expires_from_now(m_timeout);
             if(0!=num)
                 std::cout << "Too late! Timer already expires!" <<  std::endl;
-            m_t.async_wait([pid](const boost::system::error_code& ec){
-                    kill(pid,SIGKILL);
-                    std::cout << "Kill child process!" << std::endl;
-                });
+            m_t.async_wait([this,pid](const boost::system::error_code& ec){
+                unsigned int r = kill(pid,SIGKILL);
+                if(r == 0)
+                {
+                    ++m_statistic.CompletedCompulsorilyCommandCounter;
+                }
+                else
+                {
+                    ++m_statistic.CompletedCommandCounter;
+                }
+                std::cout << "Kill child process!" << std::endl;
+            });
             response += "-parent:";
         }
         if(-1 == err)
@@ -238,5 +247,8 @@ private:
     boost::posix_time::seconds m_timeout;
     boost::asio::io_service& m_ios;
     boost::asio::deadline_timer m_t;
+    unsigned long long int m_connect_id;
+    Logging::Statistic m_statistic;
+    src::severity_logger<logging::trivial::severity_level> m_log;
 };
 #endif
