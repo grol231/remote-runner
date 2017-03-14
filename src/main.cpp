@@ -13,6 +13,7 @@ int main(int argc, char* argv[])
     //Error handling will be in log.
     try
     {
+        Logging::InitializeLog();
         pid_t pid = fork();
         if(pid < 0)
         {

@@ -11,8 +11,9 @@
 class Server
 {
 public:
-    Server()
+    Server():m_log()
     {
+        Logging::InitializeLog();
         m_work.reset(new boost::asio::io_service::work(m_ios));
     }
     void Start(unsigned short port_num,

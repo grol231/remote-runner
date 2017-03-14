@@ -22,6 +22,15 @@ public:
         for(unsigned i = 0; argc > i; ++i)
         {
             std::string command(argv[i]);
+            if(std::string::npos != command.find("-nodaemon"))
+            {
+                std::cout << "Found -nodaemon" << std::endl;
+                is_daemon_ = false;
+            }
+            else
+            {
+                is_daemon_ = true;
+            }
             if(std::string::npos != command.find("-path="))
             {
                 //std::cout << "Found -path=!" << std::endl;
@@ -39,7 +48,8 @@ public:
                 std::string str_timeout(command,
                     command.find('=')+1, command.size()-command.find('=')-1);
                 //TODO: Rewrite type conversion.
-                timeout_ = static_cast<boost::posix_time::seconds>(std::stoi(str_timeout));
+                timeout_ = static_cast<boost::posix_time::seconds>(
+                        std::stoi(str_timeout));
             }
             if(std::string::npos != command.find("-port="))
             {
@@ -76,7 +86,11 @@ public:
     }
     const std::vector<std::string>& AllowCommands() const
     {
-        return allow_commands_;
+        return allow_commands_;    
+    }
+    const bool isDaemon() const
+    {
+        return is_daemon_;
     }
 private:
     void ReadConfigFile(std::string& path)
@@ -99,5 +113,6 @@ private:
     std::vector<std::string> allow_commands_;//TODO:Use shared_ptr!
     boost::posix_time::seconds timeout_; //FIXME: std::chrono
     bool logging_;
+    bool is_daemon_;
 };
 #endif
