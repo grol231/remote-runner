@@ -237,6 +237,7 @@ private:
             response += "success";
         }
         response += "\n";
+        BOOST_LOG_SRV(m_log,info) << Logging::ToString(record);
         return response;
     }
 private:
