@@ -7,6 +7,7 @@
 #include <string>
 #include <thread>
 #include "server.h"
+#include "config.h"
 
 const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 
@@ -14,6 +15,15 @@ class Application
 {
 public:
     Application(std::unique_ptr<Config>& config)
+        :config_(config)
+    {}
+    void Initialize()
+    {
+        std::function<void(void)> init = []
+        if(config_.isDaemon())
+            Daemon();
+    }
+    void DoInitialize()
     {
         std::unique_ptr<Server> srv(new Server());
 		std::function<void(void)> stopServer = [&srv]()
@@ -40,9 +50,12 @@ public:
             std::cout << "Thread pool size:" 
                 << thread_pool_size << std::endl;
         }
-        srv->Start(config->Port(), thread_pool_size,
-            config->AllowCommands(), config->Timeout());
+        srv->Start(config_->Port(), thread_pool_size,
+            config_->AllowCommands(), config_->Timeout());
         th->join();
+
     }
+private:
+    std::unique_ptr<Config>& config_;
 };
 #endif
