@@ -55,7 +55,6 @@ int main(int argc, char* argv[])
     }
     catch(...)
     {
-
         std::cout << "Unkown error occured!" << std::endl;
     }
 	return 0;

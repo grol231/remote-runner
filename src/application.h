@@ -8,6 +8,7 @@
 #include <thread>
 #include "server.h"
 #include "config.h"
+#include "daemon.h"
 
 const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 
@@ -19,9 +20,11 @@ public:
     {}
     void Initialize()
     {
-        std::function<void(void)> init = []
-        if(config_.isDaemon())
-            Daemon();
+        std::function<void(void)> init = [this](){DoInitialize();};
+        if(config_->isDaemon())
+            Daemon(init);
+        else
+            DoInitialize();
     }
     void DoInitialize()
     {
@@ -42,7 +45,8 @@ public:
 		std::unique_ptr<std::thread> th(new std::thread(stopServer));
 		unsigned int thread_pool_size =
 			std::thread::hardware_concurrency() * 2;
-		if (thread_pool_size == 0){
+		if (thread_pool_size == 0)
+        {
 			thread_pool_size = DEFAULT_THREAD_POOL_SIZE;
         }
         else
@@ -53,7 +57,6 @@ public:
         srv->Start(config_->Port(), thread_pool_size,
             config_->AllowCommands(), config_->Timeout());
         th->join();
-
     }
 private:
     std::unique_ptr<Config>& config_;
