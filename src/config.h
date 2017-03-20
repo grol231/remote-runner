@@ -64,12 +64,12 @@ public:
             << std::string((logging_)?"true":"false") << std::endl;
         std::cout << "port:" << port_ << std::endl;
         std::cout << "allow commands:";
-        std::cout << "is_daemon:" << is_daemon_ << std::endl;
         for(auto& i : allow_commands_)
         {
             std::cout << i << " ";
         }
         std::cout << std::endl;
+        std::cout << "is_daemon:" << is_daemon_ << std::endl;        
     }
     Config(const Config&) = delete;
     Config& operator=(const Config&) = delete;

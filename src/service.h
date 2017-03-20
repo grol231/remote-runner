@@ -37,7 +37,7 @@ public:
     }
     ~Service(){
         std::cout << "Service dystrict!" << std::endl;
-
+        BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(m_statistic);
     }
     void StartHandling()
     {
@@ -237,7 +237,7 @@ private:
             response += "success";
         }
         response += "\n";
-        BOOST_LOG_SEV(m_log,logging::trivial::info) << "Logging!!!";//Logging::ToString(record);
+        BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(record);
         return response;
     }
 private:
@@ -250,6 +250,6 @@ private:
     boost::asio::deadline_timer m_t;
     unsigned long long int m_connect_id;
     Logging::Statistic m_statistic;
-    src::severity_logger<logging::trivial::severity_level> m_log;
+    src::severity_logger<logging::trivial::severity_level>& m_log;
 };
 #endif

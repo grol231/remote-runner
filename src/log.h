@@ -79,10 +79,10 @@ static void InitializeLog()
     );
     logging::add_common_attributes();
     //src::logger l;
-    //logging::core::get()->set_filter
-    //(   
-    //    logging::trivial::severity >= logging::trivial::info
-    //);
+    logging::core::get()->set_filter
+    (   
+        logging::trivial::severity >= logging::trivial::info
+    );
 };
 //TODO: use stream!
 static std::string ToString(const LogRecord& record)//Why static?

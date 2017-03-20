@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     //Error handling will be in log.
     try
     {
-        Logging::InitializeLog();        
+//        Logging::InitializeLog();        
         std::unique_ptr<Config> config(new Config(argc, argv));
       //TODO:Use shared_ptr!
         Application app(config);
