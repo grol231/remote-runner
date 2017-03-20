@@ -13,34 +13,11 @@ int main(int argc, char* argv[])
     //Error handling will be in log.
     try
     {
-        Logging::InitializeLog();
-        pid_t pid = fork();
-        if(pid < 0)
-        {
-            std::cout << "can't fork" << std::endl;            
-            exit(1);
-        }
-        else
-        {
-            if(pid != 0)            
-            {
-                std::cout << "I am in the parent." << std::endl;
-                exit(0);
-            }
-            else
-            {
-                std::cout << "I am in the child." << std::endl;
-            }                
-        }
-        setsid();
-        unsigned int numFiles = sysconf(_SC_OPEN_MAX);
-        for(unsigned int i = 0; i < numFiles; ++i)
-        {
-            close(i);
-        }
+        Logging::InitializeLog();        
         std::unique_ptr<Config> config(new Config(argc, argv));
       //TODO:Use shared_ptr!
         Application app(config);
+        app.Initialize();
     }
     catch(boost::system::system_error& e)
     {

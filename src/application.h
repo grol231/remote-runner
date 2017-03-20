@@ -20,9 +20,8 @@ public:
     {}
     void Initialize()
     {
-        std::function<void(void)> init = [this](){DoInitialize();};
         if(config_->isDaemon())
-            Daemon(init);
+            Daemon([this](){DoInitialize();});        
         else
             DoInitialize();
     }

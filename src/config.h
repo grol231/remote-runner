@@ -17,7 +17,8 @@ public:
     :port_(DEFAULT_PORT_NUM),
     allow_commands_(),
     timeout_(DEFAULT_TIMEOUT),
-    logging_(false)
+    logging_(false),
+    is_daemon_(true)
     {
         for(unsigned i = 0; argc > i; ++i)
         {
@@ -63,6 +64,7 @@ public:
             << std::string((logging_)?"true":"false") << std::endl;
         std::cout << "port:" << port_ << std::endl;
         std::cout << "allow commands:";
+        std::cout << "is_daemon:" << is_daemon_ << std::endl;
         for(auto& i : allow_commands_)
         {
             std::cout << i << " ";
