@@ -22,10 +22,7 @@ public:
         boost::posix_time::seconds timeout)
     {
         assert(thread_pool_size > 0);
-        acc.reset(new Acceptor(m_ios, port_num, 
-                    allow_commands, timeout
-                    , m_log
-                    ));
+        acc.reset(new Acceptor(m_ios, port_num, allow_commands, timeout, m_log));
         acc->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
         {
