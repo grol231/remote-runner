@@ -61,9 +61,20 @@ private:
         std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
-            (new Service(sock, m_allow_commands,
-                         m_timeout, m_ios, m_connect_counter,m_log))
-                ->StartHandling();//TOD: Use shared_ptr.
+            std::shared_ptr<Service> s(new Service(m_allow_commands, m_timeout, m_ios, m_connect_counter, m_log));
+            sock->async_read_some(s->m_request, std::bind(
+                        [](const boost::system::error_code& ec,
+                            std::size_t bytes_transferred,
+                            std::shared_ptr<Service> s)
+                        {
+                            if(ec != 0)
+                            {
+                                std::cout << "Error occured! Error code =" << ec.value() << ".Message: " << ec.message();
+                            }
+                        }, std::placeholders::_1, std::placeholders::_2, s));
+           // (new Service(sock, m_allow_commands,
+               //          m_timeout, m_ios, m_connect_counter,m_log))
+        //        ->StartHandling();//TOD: Use shared_ptr.
             //Service will become the  heir from enable_shared_from_this.
         }
         else
@@ -81,7 +92,7 @@ private:
             m_acceptor.close();
         }
     }
-private:
+
     boost::asio::io_service& m_ios;
     boost::asio::ip::tcp::acceptor m_acceptor;
     std::atomic<bool> m_isStopped;
