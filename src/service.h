@@ -18,13 +18,12 @@
 class Service
 {
 public:
-    Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,
-        std::vector<std::string>& allow_commands,
+    
+    Service(std::vector<std::string>& allow_commands,
         boost::posix_time::seconds timeout,
         boost::asio::io_service& ios,
         unsigned long long int connect_id,
-        src::severity_logger<logging::trivial::severity_level>& log) :
-            m_sock(sock),
+        src::severity_logger<logging::trivial::severity_level>& log) :            
             m_allow_commands(allow_commands),
             m_timeout(timeout),
             m_ios(ios),
@@ -240,8 +239,7 @@ private:
         BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(record);
         return response;
     }
-private:
-    std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
+private:    
     std::string m_response;
     boost::asio::streambuf m_request;
     std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!

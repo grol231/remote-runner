@@ -40,7 +40,7 @@ public:
         std::cout << "Stop" << std::endl;
         m_isStopped.store(true);
         //sock.shutdown(error::shutdawn_send)
-    }
+        }
 private:
     void InitAccept()
     {
@@ -64,7 +64,42 @@ private:
             std::shared_ptr<Service> s(
                 new Service(m_allow_commands, m_timeout, 
                     m_ios, m_connect_counter, m_log));
-            sock->async_read_some(s->m_request, std::bind(
+            boost::asio::async_read_until(*sock.get(),
+                s->request,
+                '\n',
+                [this,s](const boost::system::error_code& ec,
+                    std::size_t bytes_transferred)
+                {
+                    if(0 != ec)
+                    {
+                        if(boost::asio::error::operation_aborted == ec)
+                        {
+                            std::cout << "Operation aborted!" << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "Uknown operation error!" << std::endl;
+                        }
+                        s->m_request.consume(bytes_transferred);
+                    }
+                    else
+                    {
+                        if(bytes_transferred > 1) //FIXME: This is crutch!
+                        {
+                            s->onRequestReceived(ec,bytes_transferred);
+                        }
+                        else
+                        {
+                            std::cout << "bytes_transferred:"
+                                << bytes_transferred << std::endl;
+                            s->m_request.consume(bytes_transferred);
+                            s->StartHandling();
+                        }
+                    }
+                }
+            );
+
+           /* sock->async_read_some(s->m_request, std::bind(
                 [](const boost::system::error_code& ec,
                     std::size_t bytes_transferred,
                     std::shared_ptr<Service> s)
@@ -75,6 +110,7 @@ private:
                         << ec.value() << ".Message: " << ec.message();
                     }
                 }, std::placeholders::_1, std::placeholders::_2, s));
+                */
            // (new Service(sock, m_allow_commands,
                //          m_timeout, m_ios, m_connect_counter,m_log))
         //        ->StartHandling();//TOD: Use shared_ptr.
