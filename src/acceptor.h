@@ -34,7 +34,7 @@ public:
         std::cout << "Start" << std::endl;
         m_acceptor.listen();
         InitAccept();
-    }
+    }:
     void Stop()
     {
         std::cout << "Stop" << std::endl;
@@ -62,8 +62,9 @@ private:
         if (ec == 0)
         {
             std::shared_ptr<Service> s(
-                new Service(m_allow_commands, m_timeout, 
+                new Service(m_allow_commands, m_timeout,             
                     m_ios, m_connect_counter, m_log));
+            
             boost::asio::async_read_until(*sock.get(),
                 s->request,
                 '\n',

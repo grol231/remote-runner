@@ -34,47 +34,14 @@ public:
     {
         m_statistic.ConnectID = m_connect_id;
     }
-    ~Service(){
+    ~Service()
+    {
         std::cout << "Service dystrict!" << std::endl;
         BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(m_statistic);
     }
     void StartHandling()
     {
         std::cout << "StartHandling" << std::endl;
-        boost::asio::async_read_until(*m_sock.get(),
-            m_request,
-            '\n',
-            [this](const boost::system::error_code& ec,
-                std::size_t bytes_transferred)
-            {
-                if(0 != ec)
-                {
-                    if(boost::asio::error::operation_aborted == ec)
-                    {
-                        std::cout << "Operation aborted!" << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << "Uknown operation error!" << std::endl;
-                    }
-                        m_request.consume(bytes_transferred);
-                }
-                else
-                {
-                    if(bytes_transferred > 1) //FIXME: This is crutch!
-                    {
-                        onRequestReceived(ec,bytes_transferred);
-                    }
-                    else
-                    {
-                        std::cout << "bytes_transferred:"
-                            << bytes_transferred << std::endl;
-                        m_request.consume(bytes_transferred);
-                        StartHandling();
-                    }
-                }
-            }
-        );
     }
 private:
     void onRequestReceived(const boost::system::error_code& ec,
@@ -90,7 +57,8 @@ private:
             return;
         }
         m_response = ProcessRequest(m_request, bytes_transferred);
-        boost::asio::async_write(*m_sock.get(),
+        /*
+        boost::asio::async_write(*sock.get(),
             boost::asio::buffer(m_response),
             [this](const boost::system::error_code& ec,
                 std::size_t bytes_transferred)
@@ -98,6 +66,7 @@ private:
                 onResponseSent(ec, bytes_transferred);
             }
         );
+        */
     }
     void onResponseSent(const boost::system::error_code& ec,
         std::size_t bytes_transferred)
