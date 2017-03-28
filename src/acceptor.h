@@ -5,6 +5,7 @@
 #include <memory>
 #include <atomic>
 #include <boost/asio.hpp>
+#include <boost/asio.hpp>
 #include "service.h"
 #include "log.h"
 
@@ -47,6 +48,14 @@ private:
         std::cout << "InitAccept" << std::endl;
         std::shared_ptr<boost::asio::ip::tcp::socket>
             sock(new boost::asio::ip::tcp::socket(m_ios));
+        boost::asio::socket_base::keep_alive option;
+        sock->set_option(option);
+        struct timeval tv;
+        unsigned int timeout_milli = 10000;
+        tv.tv_sec = timeout_milli / 1000;
+        tv.tv_usec = timeout_milli % 1000;
+        setsockopt(sock->native(), SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+        setsockopt(sock->native(), SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
         m_acceptor.async_accept(*sock.get(),
             [this, sock]( //TODO:Allow_commands must be a shared_ptr.
             const boost::system::error_code& error)
@@ -61,25 +70,22 @@ private:
         std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
-            (new Service(sock, m_allow_commands,
-                         m_timeout, m_ios, m_connect_counter,m_log))
-                ->StartHandling();//TOD: Use shared_ptr.
-            //Service will become the  heir from enable_shared_from_this.
+            std::shared_ptr<Service> service(
+                    new Service(sock));
+            std::function<void(void)> lambda = [](){};
+            service->Socket()->async_read_some(service->Buffer()->prepare(1024),
+                    [service](const boost::system::error_code& , std::size_t )
+                    {
+                        
+                    });
         }
         else
         {
             std::cout << "Error occured! Error code = "
                 << ec.value()
                 << ". Message: " << ec.message();
-        }
-        if (!m_isStopped.load())
-        {
-            InitAccept();
-        }
-        else
-        {
-            m_acceptor.close();
-        }
+        }   
+        InitAccept();
     }
 private:
     boost::asio::io_service& m_ios;

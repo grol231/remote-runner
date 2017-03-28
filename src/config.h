@@ -8,7 +8,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 const unsigned short DEFAULT_PORT_NUM = 12345;//TODO This const puts to class.
-const boost::posix_time::seconds DEFAULT_TIMEOUT(5);
+const boost::posix_time::seconds DEFAULT_TIMEOUT(30);
 
 class Config
 {
@@ -18,7 +18,7 @@ public:
     allow_commands_(),
     timeout_(DEFAULT_TIMEOUT),
     logging_(false),
-    is_daemon_(true)
+    is_daemon_(false)
     {
         for(unsigned i = 0; argc > i; ++i)
         {
