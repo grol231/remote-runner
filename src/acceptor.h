@@ -72,12 +72,26 @@ private:
         {
             std::shared_ptr<Service> service(
                     new Service(sock));
-            std::function<void(void)> lambda = [](){};
-            service->Socket()->async_read_some(service->Buffer()->prepare(1024),
-                    [service](const boost::system::error_code& , std::size_t )
-                    {
-                        
-                    });
+            std::function<void(void)> lambda = 
+                [lambda, service]()
+                {
+                    service->Socket()->async_read_some(service->Buffer()->prepare(1024), 
+                        [lambda](const boost::system::error_code& ec, std::size_t transfered_bytes)
+                        {
+                            if(0 == ec)
+                            {
+                                //service->onReceived();
+                                //if(service->bytes > transfered_bytes)
+                                  //  lambda();
+                            }
+                            else
+                            {
+                                std::cout << "Error!" << std::endl;
+                            }
+                        }
+                    );  
+                };
+            lambda();
         }
         else
         {
