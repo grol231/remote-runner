@@ -10,6 +10,7 @@ class Daemon
 public:
     Daemon(const std::function<void(void)>& init)
     {
+        std::cout << "Create daemon" << std::endl;
         pid_t pid = fork();
         if(pid < 0)
         {

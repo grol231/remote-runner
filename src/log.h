@@ -69,6 +69,7 @@ struct Statistic
 //BOOST_LOG_INLINE_GLOBAL_LOGGER_INIT(my_logger, src::logger_mt) WTF?
 static void InitializeLog()
 {
+    std::cout << "InitializeLog" << std::endl;
     logging::add_file_log(
         keywords::file_name = DEFAULT_LOG_FILE,
         keywords::rotation_size = 10 * 1024 * 1024,

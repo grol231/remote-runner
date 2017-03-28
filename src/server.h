@@ -11,17 +11,27 @@
 class Server
 {
 public:
-    Server():m_log()
+    Server():
+        m_ios(),
+        m_log()
     {
+        std::cout << "Create server" << std::endl;
         Logging::InitializeLog();
         m_work.reset(new boost::asio::io_service::work(m_ios));
+    }
+    ~Server()
+    {
+        std::cout << "Server destroy!" << std::endl;
     }
     void Start(unsigned short port_num,
         unsigned int thread_pool_size,
         const std::vector<std::string>& allow_commands,
         boost::posix_time::seconds timeout)
     {
+        std::cout << "Server::Start()" << std::endl;
         assert(thread_pool_size > 0);
+        std::cout << "port_num=" << port_num << std::endl;
+       //memory leak! Lambda has acceptor this;  
         acc.reset(new Acceptor(m_ios, port_num, allow_commands, timeout, m_log));
         acc->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
@@ -34,6 +44,7 @@ public:
     }
     void Stop()
     {
+        std::cout << "Server::Stop():" << std::endl;
         acc->Stop();
         m_ios.stop();
         for (auto& th : m_thread_pool)

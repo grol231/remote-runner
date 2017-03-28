@@ -17,9 +17,12 @@ class Application
 public:
     Application(std::unique_ptr<Config>& config)
         :config_(config)
-    {}
+    {
+        std::cout << "Create application" << std::endl;
+    }
     void Initialize()
     {
+        std::cout << "Application::Initialize()" << std::endl;
         if(config_->isDaemon())
             Daemon([this](){DoInitialize();});        
         else
@@ -27,6 +30,7 @@ public:
     }
     void DoInitialize()
     {
+        std::cout << "Application::DoInitialize()" << std::endl;
         std::unique_ptr<Server> srv(new Server());
 		std::function<void(void)> stopServer = [&srv]()
 		{

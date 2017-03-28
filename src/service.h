@@ -18,7 +18,8 @@
 class Service
 {
 public:
-    
+ boost::asio::streambuf Request;
+   
     Service(std::vector<std::string>& allow_commands,
         boost::posix_time::seconds timeout,
         boost::asio::io_service& ios,
@@ -32,22 +33,23 @@ public:
             m_statistic(),
             m_log(log)            
     {
+        std::cout << "Create service" << std::endl;
         m_statistic.ConnectID = m_connect_id;
     }
     ~Service()
     {
-        std::cout << "Service dystrict!" << std::endl;
+        std::cout << "Service destroy!" << std::endl;
         BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(m_statistic);
     }
     void StartHandling()
     {
-        std::cout << "StartHandling" << std::endl;
+        std::cout << "Service::StartHandling" << std::endl;
     }
-private:
+
     void onRequestReceived(const boost::system::error_code& ec,
         std::size_t bytes_transferred)
     {
-        std::cout << "onRequestReceived" << std::endl;
+        std::cout << "Service::onRequestReceived" << std::endl;
         if (ec != 0)
         {
             std::cout << "Error occured! Error code = "
@@ -56,7 +58,7 @@ private:
             //onFinish();
             return;
         }
-        m_response = ProcessRequest(m_request, bytes_transferred);
+        m_response = ProcessRequest(Request, bytes_transferred);
         /*
         boost::asio::async_write(*sock.get(),
             boost::asio::buffer(m_response),
@@ -71,7 +73,7 @@ private:
     void onResponseSent(const boost::system::error_code& ec,
         std::size_t bytes_transferred)
     {
-        std::cout << "onResponseSent" << std::endl;
+        std::cout << "Service::onResponseSent" << std::endl;
         if (ec != 0)
         {
             std::cout << "Error occured! Error code = "
@@ -88,7 +90,7 @@ private:
     std::string ProcessRequest(boost::asio::streambuf& request,
             std::size_t bytes_transferred)
     {
-        std::cout << "ProcessRequest" << std::endl;
+        std::cout << "Service::ProcessRequest" << std::endl;
         std::string data;
         std::istream(&request) >> data;
         std::string response = "Response";
@@ -113,7 +115,9 @@ private:
         }
         if(!pid)
         {
+            std::cout << "Execute : " << data.c_str() << std::endl;
             err = execlp(data.c_str(),NULL);
+            std::cout << "Execute failed!" << std::endl;
             ++m_statistic.NotRunningCommandCounter;
             record.Result = "fail";
             record.Note = "Unsuccess execution.";
@@ -208,9 +212,9 @@ private:
         BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(record);
         return response;
     }
+
 private:    
     std::string m_response;
-    boost::asio::streambuf m_request;
     std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
     boost::posix_time::seconds m_timeout;
     boost::asio::io_service& m_ios;

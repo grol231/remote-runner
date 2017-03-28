@@ -15,9 +15,9 @@ public:
          const std::vector<std::string>& allow_commands,
         boost::posix_time::seconds timeout,
         src::severity_logger<logging::trivial::severity_level>& log
-        ) :
+        ):
         m_ios(ios),
-        m_acceptor(m_ios,
+        m_acceptor(ios,
             boost::asio::ip::tcp::endpoint(
                 boost::asio::ip::address_v4::any(),
                 port_num
@@ -28,23 +28,29 @@ public:
         m_timeout(timeout),
         m_connect_counter(0),
         m_log(log)
-    {}
-    void Start()
     {
-        std::cout << "Start" << std::endl;
+        std::cout << "Create acceptor" << std::endl;
+    }
+    ~Acceptor()
+    {
+        std::cout << "Acceptor destroy!" << std::endl;
+    }
+    void Start()
+    {        
+        std::cout << "Acceptor::Start" << std::endl;
         m_acceptor.listen();
-        InitAccept();
-    }:
+        InitAccept();        
+    }
     void Stop()
     {
-        std::cout << "Stop" << std::endl;
+        std::cout << "Acceptor::Stop" << std::endl;
         m_isStopped.store(true);
-        //sock.shutdown(error::shutdawn_send)
-        }
+        //sock.shutdown(error::shutdawn_send)        
+    }
 private:
     void InitAccept()
     {
-        std::cout << "InitAccept" << std::endl;
+        std::cout << "Acceptor::InitAccept" << std::endl;
         std::shared_ptr<boost::asio::ip::tcp::socket>
             sock(new boost::asio::ip::tcp::socket(m_ios));
         m_acceptor.async_accept(*sock.get(),
@@ -53,22 +59,24 @@ private:
         {
             onAccept(error, sock);
         });
-        ++m_connect_counter;
+        ++m_connect_counter;        
     }
     void onAccept(const boost::system::error_code& ec,
         std::shared_ptr<boost::asio::ip::tcp::socket> sock)
     {
-        std::cout << "onAccept" << std::endl;
+        std::cout << "Acceptor::onAccept" << std::endl;
+        
         if (ec == 0)
         {
             std::shared_ptr<Service> s(
                 new Service(m_allow_commands, m_timeout,             
                     m_ios, m_connect_counter, m_log));
-            
+            //m_acc_sock=sock;
+            std::function<void(void)> lambda = [](){};
             boost::asio::async_read_until(*sock.get(),
-                s->request,
+                s->Request,
                 '\n',
-                [this,s](const boost::system::error_code& ec,
+                [this,s,sock,lambda](const boost::system::error_code& ec,
                     std::size_t bytes_transferred)
                 {
                     if(0 != ec)
@@ -81,7 +89,7 @@ private:
                         {
                             std::cout << "Uknown operation error!" << std::endl;
                         }
-                        s->m_request.consume(bytes_transferred);
+                        s->Request.consume(bytes_transferred);
                     }
                     else
                     {
@@ -93,46 +101,29 @@ private:
                         {
                             std::cout << "bytes_transferred:"
                                 << bytes_transferred << std::endl;
-                            s->m_request.consume(bytes_transferred);
+                            s->Request.consume(bytes_transferred);
                             s->StartHandling();
                         }
                     }
                 }
             );
-
-           /* sock->async_read_some(s->m_request, std::bind(
-                [](const boost::system::error_code& ec,
-                    std::size_t bytes_transferred,
-                    std::shared_ptr<Service> s)
-                {
-                    if(ec != 0)
-                    {
-                        std::cout << "Error occured! Error code =" 
-                        << ec.value() << ".Message: " << ec.message();
-                    }
-                }, std::placeholders::_1, std::placeholders::_2, s));
-                */
-           // (new Service(sock, m_allow_commands,
-               //          m_timeout, m_ios, m_connect_counter,m_log))
-        //        ->StartHandling();//TOD: Use shared_ptr.
-            //Service will become the  heir from enable_shared_from_this.
-        }
-        else
-        {
+       }
+       else
+       {
             std::cout << "Error occured! Error code = "
                 << ec.value()
                 << ". Message: " << ec.message();
-        }
-        if (!m_isStopped.load())
-        {
+       }
+       if (!m_isStopped.load())
+       {
             InitAccept();
-        }
-        else
-        {
+       }
+       else
+       {
             m_acceptor.close();
-        }
+       }        
     }
-
+    std::shared_ptr<boost::asio::ip::tcp::socket> m_acc_sock;
     boost::asio::io_service& m_ios;
     boost::asio::ip::tcp::acceptor m_acceptor;
     std::atomic<bool> m_isStopped;
