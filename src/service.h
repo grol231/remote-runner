@@ -15,7 +15,7 @@
 #include <boost/asio/error.hpp>
 #include "log.h"
 
-class Service
+class Service : public std::enable_shared_from_this<Service>
 {
 public:
     Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock):
@@ -27,7 +27,20 @@ public:
     {
         std::cout << "Service destroyed!" << std::endl;
     }
-    void OnRequestReceived(){}
+    void OnRequestReceived()
+    {
+        std::string response=ProcessRequest();
+        boost::asio::async_write(*sock_.get(),
+                boost::asio::buffer(response),
+                [this, response](const boost::system::error_code& ec, std::size_t bytes_transffered)
+                {
+                    onResponseSent(response);
+                }
+        );
+    }
+    
+    std::string ProcessRequest(){return std::string();}
+    void onResponseSent(std::string&){}
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
@@ -35,3 +48,4 @@ private:
     std::shared_ptr<boost::asio::streambuf> buffer_;
 };
 #endif
+

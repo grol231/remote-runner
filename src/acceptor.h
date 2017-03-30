@@ -80,24 +80,29 @@ private:
                     new Service(sock));
            // std::function<void(void)> lambda = [&lambda, service]()
             unsigned long long int counter = 0;
+            //use shared_from_this; use 
+            //StartHandling()
             m_lambda = [this, service, &counter]()
                 {       
-                    /*
+                    
                      boost::asio::async_read_until(*service->Socket().get(),
                         *service->Buffer().get(),
                         '\n',
-                        [&lambda,service](const boost::system::error_code& ec,
+                        [this,service](const boost::system::error_code& ec,
                             std::size_t bytes_transferred)
                             {
                                 if(0 == ec)
                                 {
-                                    std::cout 
-                                        << "Async operation success!" << std::endl;
-                                    std::string buf;
-                                    std::istream(service->Buffer().get()) >> buf;
-                                    std::cout << buf << std::endl;
-                                    //service->OnRequestReceived();
-                                    lambda();
+                                    if(1 < bytes_transferred)
+                                    {
+                                        std::cout 
+                                            << "Async operation success!" << std::endl;
+                                        std::string buf;
+                                        std::istream(service->Buffer().get()) >> buf;
+                                        std::cout << buf << std::endl;                                    
+                                        //service->OnRequestReceived();
+                                    }
+                                    m_lambda();
                                 }
                                 else
                                 {
@@ -105,8 +110,8 @@ private:
                                 }
                             }
                     );
-                    */                   
-                    m_lambda();
+                                      
+                   // m_lambda();
                 };
            m_lambda();
         }
