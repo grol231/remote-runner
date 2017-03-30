@@ -16,6 +16,10 @@ public:
         Logging::InitializeLog();
         m_work.reset(new boost::asio::io_service::work(m_ios));
     }
+    ~Server()
+    {
+        std::cout << "Server destroy!" << std::endl;
+    }
     void Start(unsigned short port_num,
         unsigned int thread_pool_size,
         const std::vector<std::string>& allow_commands,
