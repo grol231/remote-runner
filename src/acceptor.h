@@ -79,10 +79,11 @@ private:
             std::shared_ptr<Service> service(
                     new Service(sock));
            // std::function<void(void)> lambda = [&lambda, service]()
-            unsigned long long int counter = 0;
+ 
             //use shared_from_this; use 
-            //StartHandling()
-            m_lambda = [this, service, &counter]()
+            service->StartHandling();
+            /*
+            m_lambda = [this, service]()
                 {       
                     
                      boost::asio::async_read_until(*service->Socket().get(),
@@ -93,15 +94,13 @@ private:
                             {
                                 if(0 == ec)
                                 {
-                                    if(1 < bytes_transferred)
+                                    if(1 < bytes_transffered)
                                     {
                                         std::cout 
-                                            << "Async operation success!" << std::endl;
-                                        std::string buf;
-                                        std::istream(service->Buffer().get()) >> buf;
-                                        std::cout << buf << std::endl;                                    
-                                        //service->OnRequestReceived();
+                                            << "Async operation success!" << std::endl;                                    
+                                        service->OnRequestReceived();
                                     }
+                                    service->Buffer()->consume(bytes_transffered);
                                     m_lambda();
                                 }
                                 else
@@ -114,6 +113,7 @@ private:
                    // m_lambda();
                 };
            m_lambda();
+           */
         }
         else
         {
