@@ -5,7 +5,6 @@
 #include <memory>
 #include <atomic>
 #include <boost/asio.hpp>
-#include <boost/asio.hpp>
 #include "service.h"
 #include "log.h"
 
