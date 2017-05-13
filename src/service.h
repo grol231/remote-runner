@@ -21,7 +21,8 @@ public:
     Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock):
         sock_(sock),
         buffer_(std::make_shared<boost::asio::streambuf>())
-    {        
+    {
+        std::cout << "Service created!" << std::endl;        
     }
     ~Service()
     {
@@ -29,6 +30,7 @@ public:
     }
     void OnRequestReceived()
     {
+        std::cout << "OnRequestReceived" << std::endl;
         std::string response = ProcessRequest();
         boost::asio::async_write(*sock_.get(),
                 boost::asio::buffer(response),
@@ -41,9 +43,11 @@ public:
     }
     void StartHandling()
     {      
+        std::cout << "StartHandling" << std::endl;
         std::weak_ptr<Service> weakSelf = shared_from_this();
         handling_ = [weakSelf]()
             {       
+                std::cout << "lambda: handling_" << std::endl;
                 std::shared_ptr<Service> self = weakSelf.lock();
                 boost::asio::async_read_until(*self->Socket().get(),
                     *self->Buffer().get(),
@@ -60,6 +64,9 @@ public:
                                     << "Async operation success!" << std::endl;                                    
                                 self->OnRequestReceived();
                             }
+                          
+
+
                             self->buffer_->consume(bytes_transffered);
                             self->handling_();
                         }
@@ -73,8 +80,15 @@ public:
         handling_();
     }
     
-    std::string ProcessRequest(){return std::string();}
-    void OnResponseSent(const std::string&){}
+    std::string ProcessRequest()
+    {
+        std::cout << "ProcessRequest" << std::endl;
+        return std::string();
+    }
+    void OnResponseSent(const std::string&)
+    {
+        std::cout << "OnResponseSent" << std::endl;
+    }
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
