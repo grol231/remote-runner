@@ -15,7 +15,7 @@
 #include <boost/asio/error.hpp>
 #include "log.h"
 
-class Service
+class Service : public std::enable_shared_from_this<Service>
 {
 public:
     Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,
@@ -42,7 +42,35 @@ public:
     void StartHandling()
     {
         std::cout << "StartHandling" << std::endl;
-        boost::asio::async_read_until(*m_sock.get(),
+       
+       std::weak_ptr<Service> weakSelf = shared_from_this();
+       handling_ = [weakSelf](){
+           std::cout << "lambda: handling_" << std::endl;
+           std::shared_ptr<Service> self = weakSelf.lock();
+           boost::asio::async_read_until(*self->Socket().get(),
+               *self->Buffer().get(),
+               '\n',
+               [self](const boost::system::error_code& ec,
+                      std::size_t bytes_transffered)
+              { 
+                     if(0 == ec)
+                     {
+                         if(1 < bytes_transffered)//This is crutch!
+                         {                              
+                             std::cout<<"Async operation success!"<<std::endl;
+                             self->OnRequestReceived();
+                         }
+                         self->buffer_->consume(bytes_transffered);
+                         self->handling_();
+                     }
+                     else
+                     {
+                        std::cout << "Async operation error!" << std::endl;                                 }                    
+              }
+           );
+       };
+       handling_();
+        /*boost::asio::async_read_until(*m_sock.get(),
             m_request,
             '\n',
             [this](const boost::system::error_code& ec,
@@ -75,13 +103,15 @@ public:
                     }
                 }
             }
+            
         );
+        */
     }
 private:
-    void onRequestReceived(const boost::system::error_code& ec,
-        std::size_t bytes_transferred)
+    void onRequestReceived()
     {
         std::cout << "onRequestReceived" << std::endl;
+        /*
         if (ec != 0)
         {
             std::cout << "Error occured! Error code = "
@@ -90,6 +120,7 @@ private:
             //onFinish();
             return;
         }
+        */
         m_response = ProcessRequest(m_request, bytes_transferred);
         boost::asio::async_write(*m_sock.get(),
             boost::asio::buffer(m_response),
@@ -240,6 +271,8 @@ private:
         BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(record);
         return response;
     }
+    std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
+    std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
     std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
     std::string m_response;
@@ -251,5 +284,8 @@ private:
     unsigned long long int m_connect_id;
     Logging::Statistic m_statistic;
     src::severity_logger<logging::trivial::severity_level>& m_log;
+    std::function<void(void)> handling_;
+    std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
+    std::shared_ptr<boost::asio::streambuf> buffer_;
 };
 #endif
