@@ -29,6 +29,10 @@ public:
         m_connect_counter(0),
         m_log(log)
     {}
+    ~Acceptor()
+    {
+        std::cout << "Acceptor destroyed!" << std::endl;
+    }
     void Start()
     {
         std::cout << "Start" << std::endl;
@@ -66,6 +70,10 @@ private:
                 ->StartHandling();//TOD: Use shared_ptr.
             //Service will become the  heir from enable_shared_from_this.
             */
+            std::shared_ptr<Service> service(
+                    new Service(sock, m_allow_commands, m_timeout,
+                                m_ios, m_connect_counter, m_log));
+            service->StartHandling();
 
         }
         else

@@ -71,6 +71,10 @@ public:
         std::cout << std::endl;
         std::cout << "is_daemon:" << is_daemon_ << std::endl;        
     }
+    ~Config()
+    {
+        std::cout << "Config destroyed!" << std::endl;
+    }
     Config(const Config&) = delete;
     Config& operator=(const Config&) = delete;
     Config() = delete;

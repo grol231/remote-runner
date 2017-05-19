@@ -37,6 +37,10 @@ public:
         }
         init();
     }
+    ~Daemon()
+    {
+        std::cout << "Daemon distroyed!" << std::endl;
+    }
     Daemon() = delete;
     Daemon(const Daemon&) = delete;
     Daemon& operator=(const Daemon&) = delete;

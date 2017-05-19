@@ -24,7 +24,8 @@ public:
         boost::asio::io_service& ios,
         unsigned long long int connect_id,
         src::severity_logger<logging::trivial::severity_level>& log) :
-            m_sock(sock),
+            sock_(sock),
+            buffer_(std::make_shared<boost::asio::streambuf>()),
             m_allow_commands(allow_commands),
             m_timeout(timeout),
             m_ios(ios),
@@ -36,7 +37,7 @@ public:
         m_statistic.ConnectID = m_connect_id;
     }
     ~Service(){
-        std::cout << "Service dystrict!" << std::endl;
+        std::cout << "Service destroyed!" << std::endl;
         BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(m_statistic);
     }
     void StartHandling()
@@ -58,7 +59,7 @@ public:
                          if(1 < bytes_transffered)//This is crutch!
                          {                              
                              std::cout<<"Async operation success!"<<std::endl;
-                             self->OnRequestReceived();
+                             self->OnRequestReceived(bytes_transffered);
                          }
                          self->buffer_->consume(bytes_transffered);
                          self->handling_();
@@ -70,59 +71,13 @@ public:
            );
        };
        handling_();
-        /*boost::asio::async_read_until(*m_sock.get(),
-            m_request,
-            '\n',
-            [this](const boost::system::error_code& ec,
-                std::size_t bytes_transferred)
-            {
-                if(0 != ec)
-                {
-                    if(boost::asio::error::operation_aborted == ec)
-                    {
-                        std::cout << "Operation aborted!" << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << "Uknown operation error!" << std::endl;
-                    }
-                        m_request.consume(bytes_transferred);
-                }
-                else
-                {
-                    if(bytes_transferred > 1) //FIXME: This is crutch!
-                    {
-                        onRequestReceived(ec,bytes_transferred);
-                    }
-                    else
-                    {
-                        std::cout << "bytes_transferred:"
-                            << bytes_transferred << std::endl;
-                        m_request.consume(bytes_transferred);
-                        StartHandling();
-                    }
-                }
-            }
-            
-        );
-        */
     }
 private:
-    void onRequestReceived()
+    void OnRequestReceived(std::size_t bytes_transferred)
     {
         std::cout << "onRequestReceived" << std::endl;
-        /*
-        if (ec != 0)
-        {
-            std::cout << "Error occured! Error code = "
-                << ec.value()
-                << ". Message: " << ec.message();
-            //onFinish();
-            return;
-        }
-        */
-        m_response = ProcessRequest(m_request, bytes_transferred);
-        boost::asio::async_write(*m_sock.get(),
+        m_response = ProcessRequest(buffer_, bytes_transferred);
+        boost::asio::async_write(*sock_.get(),
             boost::asio::buffer(m_response),
             [this](const boost::system::error_code& ec,
                 std::size_t bytes_transferred)
@@ -142,18 +97,14 @@ private:
                 << ". Message: " << ec.message();
         }
         StartHandling();
-        //onFinish();
     }
-    /*void onFinish()
-    {
-        delete this;
-    }*/
-    std::string ProcessRequest(boost::asio::streambuf& request,
+
+    std::string ProcessRequest(std::shared_ptr<boost::asio::streambuf> buffer,
             std::size_t bytes_transferred)
     {
         std::cout << "ProcessRequest" << std::endl;
         std::string data;
-        std::istream(&request) >> data;
+        std::istream(buffer.get()) >> data;
         std::string response = "Response";
         std::cout << "Request:" << data << std::endl;
         Logging::LogRecord record;
@@ -200,7 +151,7 @@ private:
                 {
                     ++m_statistic.CompletedCommandCounter;
                 }
-                std::cout << "Kill child process!" << std::endl;
+                std::cout << "Kill child process! pId:" << pid <<  std::endl;
             });
             response += "-parent:";
         }
@@ -274,9 +225,7 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
-    std::shared_ptr<boost::asio::ip::tcp::socket> m_sock;
     std::string m_response;
-    boost::asio::streambuf m_request;
     std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
     boost::posix_time::seconds m_timeout;
     boost::asio::io_service& m_ios;

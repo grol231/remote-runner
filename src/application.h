@@ -18,6 +18,10 @@ public:
     Application(std::unique_ptr<Config>& config)
         :config_(config)
     {}
+    ~Application()
+    {
+        std::cout << "Application destroyed!" << std::endl;
+    }
     void Initialize()
     {
         if(config_->isDaemon())
