@@ -34,6 +34,7 @@ public:
             m_statistic(),
             m_log(log)            
     {
+        std::cout << "Service created." << std::endl;
         m_statistic.ConnectID = m_connect_id;
     }
     ~Service(){
@@ -48,8 +49,8 @@ public:
        handling_ = [weakSelf](){
            std::cout << "lambda: handling_" << std::endl;
            std::shared_ptr<Service> self = weakSelf.lock();
-           boost::asio::async_read_until(*self->Socket().get(),
-               *self->Buffer().get(),
+           boost::asio::async_read_until(*self->sock_.get(),
+               *self->buffer_.get(),
                '\n',
                [self](const boost::system::error_code& ec,
                       std::size_t bytes_transffered)
@@ -62,11 +63,13 @@ public:
                              self->OnRequestReceived(bytes_transffered);
                          }
                          self->buffer_->consume(bytes_transffered);
+                         std::cout << "handling_ call himself!" << std::endl;
                          self->handling_();
                      }
                      else
                      {
-                        std::cout << "Async operation error!" << std::endl;                                 }                    
+                        std::cout << "Async operation error!" << std::endl;
+                     }
               }
            );
        };
@@ -96,7 +99,6 @@ private:
                 << ec.value()
                 << ". Message: " << ec.message();
         }
-        StartHandling();
     }
 
     std::string ProcessRequest(std::shared_ptr<boost::asio::streambuf> buffer,
@@ -110,6 +112,7 @@ private:
         Logging::LogRecord record;
         record.Command = data;
         record.Condition = "start";
+        
         if(!m_allow_commands.empty() &&
             m_allow_commands.end()
             ==
@@ -122,12 +125,14 @@ private:
         int err(0);
         if(pid < 0)
         {
+            std::cout << "fork fail!" << std::endl;
             response += ":fork fail!\n";
             return response;
         }
         if(!pid)
         {
-            err = execlp(data.c_str(),NULL);
+            std::cout << "child:" << pid  << std::endl;
+            err = execlp("xterm",NULL);
             ++m_statistic.NotRunningCommandCounter;
             record.Result = "fail";
             record.Note = "Unsuccess execution.";
@@ -136,6 +141,7 @@ private:
         }
         else
         {
+            /*
             ++m_statistic.RunningCommandCounter;
             record.Result = "success";
             size_t num = m_t.expires_from_now(m_timeout);
@@ -153,6 +159,7 @@ private:
                 }
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
             });
+            */
             response += "-parent:";
         }
         if(-1 == err)
@@ -218,6 +225,7 @@ private:
         {
             response += "success";
         }
+        
         response += "\n";
         BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(record);
         return response;
