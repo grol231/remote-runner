@@ -20,17 +20,14 @@ public:
     logging_(false),
     is_daemon_(true)
     {
+        std::cout << "Found ";
         for(unsigned i = 0; argc > i; ++i)
         {
             std::string command(argv[i]);
-            if(std::string::npos != command.find("-nodaemon"))
-            {
-                std::cout << "Found -nodaemon" << std::endl;
+            std::cout << "*" << argv[i] << "*" << " ";
+            if(command.compare("-nodaemon") == 0)
+            {               
                 is_daemon_ = false;
-            }
-            else
-            {
-                is_daemon_ = true;
             }
             if(std::string::npos != command.find("-path="))
             {
@@ -59,6 +56,7 @@ public:
                 port_ = static_cast<unsigned>(std::stoi(str_port));
             }
         }
+        std::cout << std::endl;
         std::cout << "timeout:" << timeout_ << std::endl;
         std::cout << "logging:"//TODO:Rewrite!
             << std::string((logging_)?"true":"false") << std::endl;
