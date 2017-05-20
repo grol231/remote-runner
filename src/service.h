@@ -132,7 +132,7 @@ private:
         if(!pid)
         {
             std::cout << "child:" << pid  << std::endl;
-            err = execlp("xterm",NULL);
+            err = execlp(data.c_str(),NULL);
             ++m_statistic.NotRunningCommandCounter;
             record.Result = "fail";
             record.Note = "Unsuccess execution.";
@@ -141,7 +141,7 @@ private:
         }
         else
         {
-            /*
+            
             ++m_statistic.RunningCommandCounter;
             record.Result = "success";
             size_t num = m_t.expires_from_now(m_timeout);
@@ -159,7 +159,7 @@ private:
                 }
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
             });
-            */
+            
             response += "-parent:";
         }
         if(-1 == err)
