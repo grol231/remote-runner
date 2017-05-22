@@ -11,23 +11,23 @@
 class Acceptor
 {
 public:
-    Acceptor(boost::asio::io_service& ios, unsigned short port_num,
-         const std::vector<std::string>& allow_commands,
-        boost::posix_time::seconds timeout,
-        src::severity_logger<logging::trivial::severity_level>& log
-        ) :
-        m_ios(ios),
-        m_acceptor(m_ios,
+    Acceptor(boost::asio::io_service& ios, 
+            unsigned short port_num,
+            const std::vector<std::string>& allow_commands,
+            boost::posix_time::seconds timeout,
+            src::severity_logger<logging::trivial::severity_level>& log)
+        :ios_(ios),
+        acceptor_(ios_,
             boost::asio::ip::tcp::endpoint(
                 boost::asio::ip::address_v4::any(),
                 port_num
             )
         ),
-        m_isStopped(false),
-        m_allow_commands(allow_commands),
-        m_timeout(timeout),
-        m_connect_counter(0),
-        m_log(log)
+        isStopped_(false),
+        allow_commands_(allow_commands),
+        timeout_(timeout),
+        connect_counter_(0),
+        log_(log)
     {}
     ~Acceptor()
     {
@@ -36,13 +36,13 @@ public:
     void Start()
     {
         std::cout << "Start" << std::endl;
-        m_acceptor.listen();
+        acceptor_.listen();
         InitAccept();
     }
     void Stop()
     {
         std::cout << "Stop" << std::endl;
-        m_isStopped.store(true);
+        isStopped_.store(true);
         //sock.shutdown(error::shutdawn_send)
     }
 private:
@@ -50,14 +50,14 @@ private:
     {
         std::cout << "InitAccept" << std::endl;
         std::shared_ptr<boost::asio::ip::tcp::socket>
-            sock(new boost::asio::ip::tcp::socket(m_ios));
-        m_acceptor.async_accept(*sock.get(),
+            sock(new boost::asio::ip::tcp::socket(ios_));
+        acceptor_.async_accept(*sock.get(),
             [this, sock]( //TODO:Allow_commands must be a shared_ptr.
             const boost::system::error_code& error)
         {
             onAccept(error, sock);
         });
-        ++m_connect_counter;
+        ++connect_counter_;
     }
     void onAccept(const boost::system::error_code& ec,
         std::shared_ptr<boost::asio::ip::tcp::socket> sock)
@@ -66,8 +66,8 @@ private:
         if (ec == 0)
         {
             std::shared_ptr<Service> service(
-                    new Service(sock, m_allow_commands, m_timeout,
-                                m_ios, m_connect_counter, m_log));
+                    new Service(sock, allow_commands_, timeout_,
+                                ios_, connect_counter_, log_));
             service->StartHandling();
 
         }
@@ -77,22 +77,22 @@ private:
                 << ec.value()
                 << ". Message: " << ec.message();
         }
-        if (!m_isStopped.load())
+        if (!isStopped_.load())
         {
             InitAccept();
         }
         else
         {
-            m_acceptor.close();
+            acceptor_.close();
         }
     }
 private:
-    boost::asio::io_service& m_ios;
-    boost::asio::ip::tcp::acceptor m_acceptor;
-    std::atomic<bool> m_isStopped;
-    std::vector<std::string> m_allow_commands;
-    boost::posix_time::seconds m_timeout;
-    unsigned long long int m_connect_counter;
-    src::severity_logger<logging::trivial::severity_level>& m_log;
+    boost::asio::io_service& ios_;
+    boost::asio::ip::tcp::acceptor acceptor_;
+    std::atomic<bool> isStopped_;
+    std::vector<std::string> allow_commands_;
+    boost::posix_time::seconds timeout_;
+    unsigned long long int connect_counter_;
+    src::severity_logger<logging::trivial::severity_level>& log_;
 };
 #endif

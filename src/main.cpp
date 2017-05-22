@@ -14,10 +14,10 @@ int main(int argc, char* argv[])
     try
     {
 //        Logging::InitializeLog();        
-        std::unique_ptr<Config> config(new Config(argc, argv));
+        std::shared_ptr<Config> config(new Config(argc, argv));
       //TODO:Use shared_ptr!
-        Application app(config);
-        app.Initialize();
+        std::unique_ptr<Application> app(std::make_unique<Application>(config));
+        app->Initialize();
     }
     catch(boost::system::system_error& e)
     {

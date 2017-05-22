@@ -15,7 +15,7 @@ const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 class Application
 {
 public:
-    Application(std::unique_ptr<Config>& config)
+    Application(std::shared_ptr<Config> config)
         :config_(config)
     {}
     ~Application()
@@ -62,6 +62,6 @@ public:
         th->join();
     }
 private:
-    std::unique_ptr<Config>& config_;
+    std::shared_ptr<Config> config_;
 };
 #endif
