@@ -16,8 +16,8 @@ int main(int argc, char* argv[])
 //        Logging::InitializeLog();        
         std::shared_ptr<Config> config(new Config(argc, argv));
       //TODO:Use shared_ptr!
-        std::unique_ptr<Application> app(std::make_unique<Application>(config));
-        app->Initialize();
+        std::unique_ptr<Application> app(std::make_unique<Application>());
+        app->Initialize(config);
     }
     catch(boost::system::system_error& e)
     {

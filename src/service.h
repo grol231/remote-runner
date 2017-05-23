@@ -14,45 +14,40 @@
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/error.hpp>
 #include "log.h"
+#include "config.h"
 
 class Service : public std::enable_shared_from_this<Service>
 {
 public:
-    Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,
-        std::vector<std::string>& allow_commands,
-        boost::posix_time::seconds timeout,
+    Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,     
         boost::asio::io_service& ios,
         unsigned long long int connect_id,
         src::severity_logger<logging::trivial::severity_level>& log) :
             sock_(sock),
-            buffer_(std::make_shared<boost::asio::streambuf>()),
-            allow_commands_(allow_commands),
-            timeout_(timeout),
+            buffer_(std::make_shared<boost::asio::streambuf>()),                   
             ios_(ios),
             timer_(ios_),
-            connect_id_(connect_id),
             statistic_(),
-            log_(log)            
+            log_(log)          
     {
         std::cout << "Service created." << std::endl;
-        statistic_.ConnectID = connect_id_;
+        statistic_.ConnectID = connect_id;
     }
     ~Service(){
         std::cout << "Service destroyed!" << std::endl;
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(statistic_);
     }
-    void StartHandling()
+    void StartHandling(std::shared_ptr<Config> config)
     {
-        std::cout << "StartHandling" << std::endl;
-       
+       std::cout << "StartHandling" << std::endl;       
        std::weak_ptr<Service> weakSelf = shared_from_this();
-       handling_ = [weakSelf](){
+       handling_ = [weakSelf, config](){
            std::cout << "lambda: handling_" << std::endl;
            std::shared_ptr<Service> self = weakSelf.lock();
            boost::asio::async_read_until(*self->sock_.get(),
                *self->buffer_.get(),
                '\n',
-               [self](const boost::system::error_code& ec,
+               [self, config](const boost::system::error_code& ec,
                       std::size_t bytes_transffered)
               { 
                      if(0 == ec)
@@ -60,7 +55,7 @@ public:
                          if(1 < bytes_transffered)//This is crutch!
                          {                              
                              std::cout<<"Async operation success!"<<std::endl;
-                             self->OnRequestReceived(bytes_transffered);
+                             self->OnRequestReceived(bytes_transffered, config);
                          }
                          self->buffer_->consume(bytes_transffered);
                          std::cout << "handling_ call himself!" << std::endl;
@@ -76,10 +71,10 @@ public:
        handling_();
     }
 private:
-    void OnRequestReceived(std::size_t bytes_transferred)
+    void OnRequestReceived(std::size_t bytes_transferred,std::shared_ptr<Config> config)
     {
         std::cout << "onRequestReceived" << std::endl;
-        response_ = ProcessRequest(buffer_, bytes_transferred);
+        response_ = ProcessRequest(buffer_, bytes_transferred, config);
         boost::asio::async_write(*sock_.get(),
             boost::asio::buffer(response_),
             [this](const boost::system::error_code& ec,
@@ -102,7 +97,8 @@ private:
     }
 
     std::string ProcessRequest(std::shared_ptr<boost::asio::streambuf> buffer,
-            std::size_t bytes_transferred)
+            std::size_t bytes_transferred,
+            std::shared_ptr<Config> config)
     {
         std::cout << "ProcessRequest" << std::endl;
         std::string data;
@@ -113,10 +109,11 @@ private:
         record.Command = data;
         record.Condition = "start";
         
-        if(!allow_commands_.empty() &&
-            allow_commands_.end()
-            ==
-            std::find(allow_commands_.begin(), allow_commands_.end(), data))
+        auto commands = config->AllowCommands();
+        if(!commands.empty() &&
+            commands.end() 
+                == 
+            std::find(commands.begin(), commands.end(), data))
         {
             std::cout << "Not allow command!" << std::endl;
             return response+":not allow command!\n";
@@ -144,7 +141,7 @@ private:
             
             ++statistic_.RunningCommandCounter;
             record.Result = "success";
-            size_t num = timer_.expires_from_now(timeout_);
+            size_t num = timer_.expires_from_now(config->Timeout());
             if(0!=num)
                 std::cout << "Too late! Timer already expires!" <<  std::endl;
             timer_.async_wait([this,pid](const boost::system::error_code& ec){
@@ -234,11 +231,8 @@ private:
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
     std::string response_;
-    std::vector<std::string> allow_commands_;//TODO: Use shared_ptr!
-    boost::posix_time::seconds timeout_;
     boost::asio::io_service& ios_;
     boost::asio::deadline_timer timer_;
-    unsigned long long int connect_id_;
     Logging::Statistic statistic_;
     src::severity_logger<logging::trivial::severity_level>& log_;
     std::function<void(void)> handling_;

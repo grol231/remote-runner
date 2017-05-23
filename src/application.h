@@ -15,24 +15,25 @@ const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 class Application
 {
 public:
-    Application(std::shared_ptr<Config> config)
-        :config_(config)
+    Application()
     {}
     ~Application()
     {
         std::cout << "Application destroyed!" << std::endl;
     }
-    void Initialize()
+    //TODO: delete copy constructor and assign operator!
+    void Initialize(std::shared_ptr<Config> config)
     {
-        if(config_->isDaemon())
-            Daemon([this](){DoInitialize();});        
+        if(config->isDaemon())
+            Daemon([this,config](){DoInitialize(config);});        
         else
-            DoInitialize();
+            DoInitialize(config);
     }
-    void DoInitialize()
+    void DoInitialize(std::shared_ptr<Config> config)
     {
-        std::unique_ptr<Server> srv(new Server());
-		std::function<void(void)> stopServer = [&srv]()
+        std::shared_ptr<Server> srv(new Server());
+        //TODO: make to stop server in one click
+		std::function<void(void)> stopServer = [srv]()
 		{
             std::string msg;
             while(true)
@@ -57,11 +58,8 @@ public:
             std::cout << "Thread pool size:" 
                 << thread_pool_size << std::endl;
         }
-        srv->Start(config_->Port(), thread_pool_size,
-            config_->AllowCommands(), config_->Timeout());
+        srv->Start(config, thread_pool_size);
         th->join();
     }
-private:
-    std::shared_ptr<Config> config_;
 };
 #endif

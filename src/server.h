@@ -21,13 +21,11 @@ public:
     {
         std::cout << "Server destroyed!" << std::endl;
     }
-    void Start(unsigned short port_num,
-        unsigned int thread_pool_size,
-        const std::vector<std::string>& allow_commands,
-        boost::posix_time::seconds timeout)
+    void Start(std::shared_ptr<Config> config,
+        unsigned int thread_pool_size)
     {
         assert(thread_pool_size > 0);
-        acceptor_.reset(new Acceptor(ios_, port_num, allow_commands, timeout, log_));
+        acceptor_.reset(new Acceptor(ios_, log_, config));
         acceptor_->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
         {

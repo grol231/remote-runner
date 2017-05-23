@@ -24,7 +24,7 @@ public:
         for(unsigned i = 0; argc > i; ++i)
         {
             std::string command(argv[i]);
-            std::cout << "*" << argv[i] << "*" << " ";
+            //std::cout << "*" << argv[i] << "*" << " ";
             if(command.compare("-nodaemon") == 0)
             {               
                 is_daemon_ = false;
@@ -37,7 +37,7 @@ public:
                 //std::cout << "path: " << path << std::endl;
                 ReadConfigFile(path);
             }
-            if(std::string::npos != command.find("-log"))
+            if(command.compare("-log") == 0)
             {
                 logging_ = true;
             }
@@ -62,9 +62,9 @@ public:
             << std::string((logging_)?"true":"false") << std::endl;
         std::cout << "port:" << port_ << std::endl;
         std::cout << "allow commands:";
-        for(auto& i : allow_commands_)
+        for(auto& command : allow_commands_)
         {
-            std::cout << i << " ";
+            std::cout << command << " ";
         }
         std::cout << std::endl;
         std::cout << "is_daemon:" << is_daemon_ << std::endl;        
