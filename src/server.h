@@ -11,10 +11,11 @@
 class Server
 {
 public:
-    Server():m_log()
+    Server():
+        log_()
     {
         Logging::InitializeLog();
-        m_work.reset(new boost::asio::io_service::work(m_ios));
+        work_.reset(new boost::asio::io_service::work(ios_));
     }
     ~Server()
     {
@@ -26,30 +27,30 @@ public:
         boost::posix_time::seconds timeout)
     {
         assert(thread_pool_size > 0);
-        acc.reset(new Acceptor(m_ios, port_num, allow_commands, timeout, m_log));
-        acc->Start();
+        acceptor_.reset(new Acceptor(ios_, port_num, allow_commands, timeout, log_));
+        acceptor_->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
         {
             std::unique_ptr<std::thread> th(
-                new std::thread([this](){m_ios.run();})
+                new std::thread([this](){ios_.run();})
             );
-            m_thread_pool.push_back(std::move(th));
+            thread_pool_.push_back(std::move(th));
         }
     }
     void Stop()
     {
-        acc->Stop();
-        m_ios.stop();
-        for (auto& th : m_thread_pool)
+        acceptor_->Stop();
+        ios_.stop();
+        for (auto& th : thread_pool_)
         {
             th->join();
         }
     }
 private:
-    boost::asio::io_service m_ios;
-    std::unique_ptr<boost::asio::io_service::work> m_work;
-    std::unique_ptr<Acceptor> acc;
-    std::vector<std::unique_ptr<std::thread>> m_thread_pool;
-    src::severity_logger<logging::trivial::severity_level> m_log;
+    boost::asio::io_service ios_;
+    std::unique_ptr<boost::asio::io_service::work> work_;
+    std::unique_ptr<Acceptor> acceptor_;
+    std::vector<std::unique_ptr<std::thread>> thread_pool_;
+    src::severity_logger<logging::trivial::severity_level> log_;
 };
 #endif

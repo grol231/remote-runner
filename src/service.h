@@ -26,20 +26,20 @@ public:
         src::severity_logger<logging::trivial::severity_level>& log) :
             sock_(sock),
             buffer_(std::make_shared<boost::asio::streambuf>()),
-            m_allow_commands(allow_commands),
-            m_timeout(timeout),
-            m_ios(ios),
-            m_t(m_ios),
-            m_connect_id(connect_id),
-            m_statistic(),
-            m_log(log)            
+            allow_commands_(allow_commands),
+            timeout_(timeout),
+            ios_(ios),
+            timer_(ios_),
+            connect_id_(connect_id),
+            statistic_(),
+            log_(log)            
     {
         std::cout << "Service created." << std::endl;
-        m_statistic.ConnectID = m_connect_id;
+        statistic_.ConnectID = connect_id_;
     }
     ~Service(){
         std::cout << "Service destroyed!" << std::endl;
-        BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(m_statistic);
+        BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(statistic_);
     }
     void StartHandling()
     {
@@ -79,9 +79,9 @@ private:
     void OnRequestReceived(std::size_t bytes_transferred)
     {
         std::cout << "onRequestReceived" << std::endl;
-        m_response = ProcessRequest(buffer_, bytes_transferred);
+        response_ = ProcessRequest(buffer_, bytes_transferred);
         boost::asio::async_write(*sock_.get(),
-            boost::asio::buffer(m_response),
+            boost::asio::buffer(response_),
             [this](const boost::system::error_code& ec,
                 std::size_t bytes_transferred)
             {
@@ -113,10 +113,10 @@ private:
         record.Command = data;
         record.Condition = "start";
         
-        if(!m_allow_commands.empty() &&
-            m_allow_commands.end()
+        if(!allow_commands_.empty() &&
+            allow_commands_.end()
             ==
-            std::find(m_allow_commands.begin(), m_allow_commands.end(), data))
+            std::find(allow_commands_.begin(), allow_commands_.end(), data))
         {
             std::cout << "Not allow command!" << std::endl;
             return response+":not allow command!\n";
@@ -133,7 +133,7 @@ private:
         {
             std::cout << "child:" << pid  << std::endl;
             err = execlp(data.c_str(),NULL);
-            ++m_statistic.NotRunningCommandCounter;
+            ++statistic_.NotRunningCommandCounter;
             record.Result = "fail";
             record.Note = "Unsuccess execution.";
             perror("child");
@@ -142,20 +142,20 @@ private:
         else
         {
             
-            ++m_statistic.RunningCommandCounter;
+            ++statistic_.RunningCommandCounter;
             record.Result = "success";
-            size_t num = m_t.expires_from_now(m_timeout);
+            size_t num = timer_.expires_from_now(timeout_);
             if(0!=num)
                 std::cout << "Too late! Timer already expires!" <<  std::endl;
-            m_t.async_wait([this,pid](const boost::system::error_code& ec){
+            timer_.async_wait([this,pid](const boost::system::error_code& ec){
                 unsigned int r = kill(pid,SIGKILL);
                 if(r == 0)
                 {
-                    ++m_statistic.CompletedCompulsorilyCommandCounter;
+                    ++statistic_.CompletedCompulsorilyCommandCounter;
                 }
                 else
                 {
-                    ++m_statistic.CompletedCommandCounter;
+                    ++statistic_.CompletedCommandCounter;
                 }
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
             });
@@ -227,20 +227,20 @@ private:
         }
         
         response += "\n";
-        BOOST_LOG_SEV(m_log,logging::trivial::info) << Logging::ToString(record);
+        BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
         return response;
     }
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
-    std::string m_response;
-    std::vector<std::string> m_allow_commands;//TODO: Use shared_ptr!
-    boost::posix_time::seconds m_timeout;
-    boost::asio::io_service& m_ios;
-    boost::asio::deadline_timer m_t;
-    unsigned long long int m_connect_id;
-    Logging::Statistic m_statistic;
-    src::severity_logger<logging::trivial::severity_level>& m_log;
+    std::string response_;
+    std::vector<std::string> allow_commands_;//TODO: Use shared_ptr!
+    boost::posix_time::seconds timeout_;
+    boost::asio::io_service& ios_;
+    boost::asio::deadline_timer timer_;
+    unsigned long long int connect_id_;
+    Logging::Statistic statistic_;
+    src::severity_logger<logging::trivial::severity_level>& log_;
     std::function<void(void)> handling_;
     std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
     std::shared_ptr<boost::asio::streambuf> buffer_;

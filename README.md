@@ -1,2 +1,2 @@
 # remote-runner
-Runner has possibility to have one million connections.
+Runner has possibility to have 10k concurrent connections.
