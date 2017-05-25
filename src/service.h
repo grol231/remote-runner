@@ -116,8 +116,13 @@ private:
                 == 
             std::find(list.begin(), list.end(), command))
         {
-            std::cout << "Not allow command!" << std::endl;
-            return response+":not allow command!\n";
+            std::string message = " - not allow command!";
+            std::cout << message << std::endl;
+            record.Result = "fail";
+            record.Note = message; 
+            ++statistic_.NotRunningCommandCounter;
+            BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
+            return response + message + "\n";
         }
         pid_t pid = fork();//todo: error handling
         int err(0);
@@ -136,7 +141,9 @@ private:
         if(!pid)
         {
             std::cout << "child:" << pid  << std::endl;
-            err = execlp(command.c_str(),NULL);
+            execlp(command.c_str(),command.c_str(),NULL);
+            //execlp("gedit","gedit","mylog.txt");
+            //execlp("vlc","vlc","video.mp4");
             perror("child");
             exit(1);
         }
@@ -157,7 +164,7 @@ private:
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
             });
             
-            response += "-parent:";
+            response += "Success execution!";
         }            
         response += "\n";
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
