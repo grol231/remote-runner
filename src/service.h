@@ -140,8 +140,18 @@ private:
         }
         if(!pid)
         {
-            std::cout << "child:" << pid  << std::endl;
-            execlp(command.c_str(),command.c_str(),NULL);
+            std::cout << "child:" << pid  << std::endl;             
+            std::vector<std::string> v = {"vlc","video.mp4"};
+            execvp(command.c_str(), CreateArgv(v));
+            std::string message = ProcessError(errno);
+            response += message;
+            record.Result = "fail";
+            record.Note = message;             
+            BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
+            //char **argv = new char*[2]:
+              //      {"vlc","video.mp4"});
+            //execv("vlc");
+            //execv(command.c_str(),command.c_str,);
             //execlp("gedit","gedit","mylog.txt");
             //execlp("vlc","vlc","video.mp4");
             perror("child");
@@ -164,7 +174,7 @@ private:
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
             });
             
-            response += "Success execution!";
+            response += " : Successful launch!";
         }            
         response += "\n";
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
@@ -172,7 +182,17 @@ private:
     }
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
-private:
+private:    
+    char** CreateArgv(const std::vector<std::string>& args) const {
+        char** argv = new char*[args.size() + 1];
+        for (size_t i = 0; i < args.size(); ++i) {
+            argv[i] = new char[args[i].length() + 1];
+            strcpy(argv[i], args[i].c_str());
+        }
+        // Arguments must be guarded by NULL
+        argv[args.size()] = nullptr;
+        return argv;
+    }
     std::string ProcessError(int err)
     {
         std::string result;
