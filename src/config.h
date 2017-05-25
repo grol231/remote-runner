@@ -24,7 +24,6 @@ public:
         for(unsigned i = 0; argc > i; ++i)
         {
             std::string command(argv[i]);
-            //std::cout << "*" << argv[i] << "*" << " ";
             if(command.compare("-nodaemon") == 0)
             {               
                 is_daemon_ = false;

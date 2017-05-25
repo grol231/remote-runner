@@ -102,19 +102,19 @@ private:
             std::shared_ptr<Config> config)
     {
         std::cout << "ProcessRequest" << std::endl;
-        std::string data;
-        std::istream(buffer.get()) >> data;
+        std::string command;
+        std::istream(buffer.get()) >> command;
         std::string response = "Response";
-        std::cout << "Request:" << data << std::endl;
+        std::cout << "Request:" << command << std::endl;
         Logging::LogRecord record;
-        record.Command = data;
+        record.Command = command;
         record.Condition = "start";
         
-        auto commands = config->AllowCommands();
-        if(!commands.empty() &&
-            commands.end() 
+        auto list = config->AllowCommands();
+        if(!list.empty() &&
+            list.end() 
                 == 
-            std::find(commands.begin(), commands.end(), data))
+            std::find(list.begin(), list.end(), command))
         {
             std::cout << "Not allow command!" << std::endl;
             return response+":not allow command!\n";
@@ -124,16 +124,19 @@ private:
         if(pid < 0)
         {
             std::cout << "fork fail!" << std::endl;
-            response += ":fork fail!\n";
+            response += ":fork fail - ";
+            std::string message = ProcessError(errno);
+            response += message;
+            record.Result = "fail";
+            record.Note = message; 
+            ++statistic_.NotRunningCommandCounter;
+            BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             return response;
         }
         if(!pid)
         {
             std::cout << "child:" << pid  << std::endl;
-            err = execlp(data.c_str(),NULL);
-            ++statistic_.NotRunningCommandCounter;
-            record.Result = "fail";
-            record.Note = "Unsuccess execution.";
+            err = execlp(command.c_str(),NULL);
             perror("child");
             exit(1);
         }
@@ -155,71 +158,7 @@ private:
             });
             
             response += "-parent:";
-        }
-        if(-1 == err)
-        {
-            switch(errno)
-            {
-                case E2BIG:
-                    response += "E2BIG";
-                    break;
-                case EACCES:
-                    response += "EACCES";
-                    break;
-                case EFAULT:
-                    response += "EFAULT";
-                    break;
-                case EINVAL:
-                    response += "EINVAL";
-                    break;
-                case EIO:
-                    response += "EIO";
-                    break;
-                case EISDIR:
-                    response += "EISDIR";
-                    break;
-                case ELIBBAD:
-                    response += "ELIBBAD";
-                    break;
-                case ELOOP:
-                    response += "ELOOP";
-                    break;
-                case EMFILE:
-                    response += "EMFILE";
-                    break;
-                case ENAMETOOLONG:
-                    response += "ENAMETOOLONG";
-                    break;
-                case ENFILE:
-                    response += "ENFILE";
-                    break;
-                case ENOENT:
-                    response += "ENOENT";
-                    break;
-                case ENOEXEC:
-                    response += "ENOEXEC";
-                    break;
-                case ENOMEM:
-                    response += "ENOMEM";
-                    break;
-                case ENOTDIR:
-                    response += "ENOTDIR";
-                    break;
-                case EPERM:
-                    response += "EPERM";
-                    break;
-                case ETXTBSY:
-                    response += "ETXTBSY";
-                    break;
-                default:
-                    response += "Uknown error code.";
-            }
-        }
-        else
-        {
-            response += "success";
-        }
-        
+        }            
         response += "\n";
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
         return response;
@@ -227,10 +166,20 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
-    std::string ProcessError(int error)
+    std::string ProcessError(int err)
     {
         std::string result;
-
+        switch(err)
+        {
+            case EAGAIN:
+                result = "The system lacked the necessary resources to create another process.";
+            break;
+            case ENOMEM:
+                result = "Insufficient storage is available.";
+            break;
+            default:
+                result += "Uknown error code.";
+        }
         return result;
     }
 
