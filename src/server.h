@@ -17,6 +17,8 @@ public:
         Logging::InitializeLog();
         work_.reset(new boost::asio::io_service::work(ios_));
     }
+    Server(const Server&) = delete;
+    Server& operator=(const Server&) = delete;
     ~Server()
     {
         std::cout << "Server destroyed!" << std::endl;

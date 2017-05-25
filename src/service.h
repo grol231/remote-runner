@@ -71,7 +71,8 @@ public:
        handling_();
     }
 private:
-    void OnRequestReceived(std::size_t bytes_transferred,std::shared_ptr<Config> config)
+    void OnRequestReceived(std::size_t bytes_transferred,
+            std::shared_ptr<Config> config)
     {
         std::cout << "onRequestReceived" << std::endl;
         response_ = ProcessRequest(buffer_, bytes_transferred, config);
@@ -145,15 +146,11 @@ private:
             if(0!=num)
                 std::cout << "Too late! Timer already expires!" <<  std::endl;
             timer_.async_wait([this,pid](const boost::system::error_code& ec){
-                unsigned int r = kill(pid,SIGKILL);
-                if(r == 0)
-                {
-                    ++statistic_.CompletedCompulsorilyCommandCounter;
-                }
-                else
-                {
-                    ++statistic_.CompletedCommandCounter;
-                }
+                unsigned int result = kill(pid,SIGKILL);
+                if(result == 0)                
+                    ++statistic_.CompletedCompulsorilyCommandCounter;                
+                else                
+                    ++statistic_.CompletedCommandCounter;                
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
             });
             
@@ -230,6 +227,13 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:
+    std::string ProcessError(int error)
+    {
+        std::string result;
+
+        return result;
+    }
+
     std::string response_;
     boost::asio::io_service& ios_;
     boost::asio::deadline_timer timer_;
