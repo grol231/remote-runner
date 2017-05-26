@@ -13,6 +13,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/error.hpp>
+#include <boost/algorithm/string.hpp>
 #include "log.h"
 #include "config.h"
 
@@ -102,14 +103,25 @@ private:
             std::shared_ptr<Config> config)
     {
         std::cout << "ProcessRequest" << std::endl;
-        std::string command;
-        std::istream(buffer.get()) >> command;
+        std::string data;
+        //std::cout << "buffer.size : " << buffer->size() << std::endl;       
+        std::ostringstream ss;
+        ss << buffer;
+        data = ss.str();
+        //std::cout << "data : " << data << std::endl;
+        std::vector<std::string> args;
+        boost::split(args, data, boost::is_any_of(" "));
+/*        if(args.empty())
+        {
+           return  "response : fail";
+        }
+        */
+        std::string command = args[0];
         std::string response = "Response";
         std::cout << "Request:" << command << std::endl;
         Logging::LogRecord record;
         record.Command = command;
-        record.Condition = "start";
-        
+        record.Condition = "start";        
         auto list = config->AllowCommands();
         if(!list.empty() &&
             list.end() 
@@ -140,26 +152,27 @@ private:
         }
         if(!pid)
         {
-            std::cout << "child:" << pid  << std::endl;             
-            std::vector<std::string> v = {"vlc","video.mp4"};
-            execvp(command.c_str(), CreateArgv(v));
+           /* std::cout << "child:" << pid  << std::endl;                        
+            std::cout << "command : " << command << std::endl;
+            std::cout << "args : " << std::endl;
+            for(auto& i : args)
+                std::cout << i << std::endl;*/
+            char** argv = CreateArgv(args);
+           /* std::cout << "argv : " << std::endl;
+            std::cout << argv[0] << std::endl;
+            std::cout << argv[1] << std::endl;*/
+            execvp(command.c_str(), argv);
+           // execlp("vlc","vlc","video.mp4");
             std::string message = ProcessError(errno);
             response += message;
             record.Result = "fail";
             record.Note = message;             
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-            //char **argv = new char*[2]:
-              //      {"vlc","video.mp4"});
-            //execv("vlc");
-            //execv(command.c_str(),command.c_str,);
-            //execlp("gedit","gedit","mylog.txt");
-            //execlp("vlc","vlc","video.mp4");
             perror("child");
             exit(1);
         }
         else
-        {
-            
+        {            
             ++statistic_.RunningCommandCounter;
             record.Result = "success";
             size_t num = timer_.expires_from_now(config->Timeout());
@@ -172,8 +185,7 @@ private:
                 else                
                     ++statistic_.CompletedCommandCounter;                
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
-            });
-            
+            });            
             response += " : Successful launch!";
         }            
         response += "\n";
@@ -188,8 +200,7 @@ private:
         for (size_t i = 0; i < args.size(); ++i) {
             argv[i] = new char[args[i].length() + 1];
             strcpy(argv[i], args[i].c_str());
-        }
-        // Arguments must be guarded by NULL
+        }        
         argv[args.size()] = nullptr;
         return argv;
     }
@@ -199,13 +210,14 @@ private:
         switch(err)
         {
             case EAGAIN:
-                result = "The system lacked the necessary resources to create another process.";
+                result = "The system lacked the necessary \
+                    resources to create another process.";
             break;
             case ENOMEM:
                 result = "Insufficient storage is available.";
             break;
             default:
-                result += "Uknown error code.";
+                result = "Uknown error code.";
         }
         return result;
     }
