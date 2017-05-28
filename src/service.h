@@ -102,24 +102,19 @@ private:
             std::size_t bytes_transferred,
             std::shared_ptr<Config> config)
     {
-        std::cout << "ProcessRequest" << std::endl;
-        std::string data;
-        //std::cout << "buffer.size : " << buffer->size() << std::endl;       
-        std::ostringstream ss;
-        ss << buffer;
-        data = ss.str();
-        //std::cout << "data : " << data << std::endl;
-        std::vector<std::string> args;
-        boost::split(args, data, boost::is_any_of(" "));
-/*        if(args.empty())
-        {
-           return  "response : fail";
+        std::istream is(buffer.get());
+        std::vector<std::string> argv;
+        while(is){
+            std::string cmd;
+            is >> cmd;
+            std::cout << "cmd : " << cmd << std::endl;
+            argv.push_back(cmd);
         }
-        */
-        std::string command = args[0];
+        std::cout << "ProcessRequest" << std::endl;
         std::string response = "Response";
-        std::cout << "Request:" << command << std::endl;
+        //std::cout << "Request:" << command << std::endl;
         Logging::LogRecord record;
+        std::string command(argv[0]);
         record.Command = command;
         record.Condition = "start";        
         auto list = config->AllowCommands();
@@ -157,12 +152,13 @@ private:
             std::cout << "args : " << std::endl;
             for(auto& i : args)
                 std::cout << i << std::endl;*/
-            char** argv = CreateArgv(args);
+           // std::vector<std::string> v = {"vlc","video.mp4"};
+           // char** argv = CreateArgv(v);
            /* std::cout << "argv : " << std::endl;
             std::cout << argv[0] << std::endl;
             std::cout << argv[1] << std::endl;*/
-            execvp(command.c_str(), argv);
-           // execlp("vlc","vlc","video.mp4");
+            execvp(command.c_str(), CreateArgv(argv));
+            //execlp("vlc","vlc","video.mp4");
             std::string message = ProcessError(errno);
             response += message;
             record.Result = "fail";
