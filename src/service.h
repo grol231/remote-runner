@@ -103,18 +103,19 @@ private:
             std::shared_ptr<Config> config)
     {
         std::istream is(buffer.get());
-        std::vector<std::string> argv;
+        std::vector<std::string> args;
         while(is){
             std::string cmd;
-            is >> cmd;
-            std::cout << "cmd : " << cmd << std::endl;
-            argv.push_back(cmd);
+            is >> cmd;         
+            if(cmd.empty())
+                break;            
+            args.push_back(cmd);
         }
         std::cout << "ProcessRequest" << std::endl;
         std::string response = "Response";
         //std::cout << "Request:" << command << std::endl;
         Logging::LogRecord record;
-        std::string command(argv[0]);
+        std::string command(args[0]);
         record.Command = command;
         record.Condition = "start";        
         auto list = config->AllowCommands();
@@ -157,8 +158,16 @@ private:
            /* std::cout << "argv : " << std::endl;
             std::cout << argv[0] << std::endl;
             std::cout << argv[1] << std::endl;*/
-            execvp(command.c_str(), CreateArgv(argv));
-            //execlp("vlc","vlc","video.mp4");
+           /* std::vector<std::string> v = {"vlc"};
+            char** a = new char*[2]; 
+            a[0] = new char[4];
+            a[1] = nullptr;
+            strcpy(a[0],v[0].c_str());
+            std::cout << "a[0] = " << a[0] << std::endl;
+            std::cout << "a[1] = " << a[1] << std::endl; 
+            execvp(a[0],a);*/
+            char** argv = CreateArgv(args);
+            execvp(command.c_str(),argv );
             std::string message = ProcessError(errno);
             response += message;
             record.Result = "fail";
