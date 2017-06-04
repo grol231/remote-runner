@@ -53,7 +53,7 @@ public:
               { 
                      if(0 == ec)
                      {
-                         if(1 < bytes_transffered)//This is crutch!
+                         if(1 < bytes_transffered)
                          {                              
                              std::cout<<"Async operation success!"<<std::endl;
                              self->OnRequestReceived(bytes_transffered, config);
@@ -113,7 +113,6 @@ private:
         }
         std::cout << "ProcessRequest" << std::endl;
         std::string response = "Response";
-        //std::cout << "Request:" << command << std::endl;
         Logging::LogRecord record;
         std::string command(args[0]);
         record.Command = command;
@@ -132,7 +131,7 @@ private:
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             return response + message + "\n";
         }
-        pid_t pid = fork();//todo: error handling
+        pid_t pid = fork();
         int err(0);
         if(pid < 0)
         {
@@ -148,24 +147,6 @@ private:
         }
         if(!pid)
         {
-           /* std::cout << "child:" << pid  << std::endl;                        
-            std::cout << "command : " << command << std::endl;
-            std::cout << "args : " << std::endl;
-            for(auto& i : args)
-                std::cout << i << std::endl;*/
-           // std::vector<std::string> v = {"vlc","video.mp4"};
-           // char** argv = CreateArgv(v);
-           /* std::cout << "argv : " << std::endl;
-            std::cout << argv[0] << std::endl;
-            std::cout << argv[1] << std::endl;*/
-           /* std::vector<std::string> v = {"vlc"};
-            char** a = new char*[2]; 
-            a[0] = new char[4];
-            a[1] = nullptr;
-            strcpy(a[0],v[0].c_str());
-            std::cout << "a[0] = " << a[0] << std::endl;
-            std::cout << "a[1] = " << a[1] << std::endl; 
-            execvp(a[0],a);*/
             char** argv = CreateArgv(args);
             execvp(command.c_str(),argv );
             std::string message = ProcessError(errno);
