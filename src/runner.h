@@ -3,7 +3,10 @@
 
 class Runner 
 {
-
-}
+public:
+    Runner(){}
+    Runner& operator=(const Runner&) = delete;
+    Runner(const Runner&) = delete;
+};
 
 #endif

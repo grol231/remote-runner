@@ -16,6 +16,7 @@
 #include <boost/algorithm/string.hpp>
 #include "log.h"
 #include "config.h"
+#include "runner.h"
 
 class Service : public std::enable_shared_from_this<Service>
 {
@@ -29,7 +30,8 @@ public:
             ios_(ios),
             timer_(ios_),
             statistic_(),
-            log_(log)          
+            log_(log),
+            runner_(std::make_shared<Runner>())
     {
         std::cout << "Service created." << std::endl;
         statistic_.ConnectID = connect_id;
@@ -216,5 +218,6 @@ private:
     std::function<void(void)> handling_;
     std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
     std::shared_ptr<boost::asio::streambuf> buffer_;
+    std::shared_ptr<Runner> runner_;
 };
 #endif
