@@ -183,7 +183,8 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:    
-    char** CreateArgv(const std::vector<std::string>& args) const {
+    char** createargv(const std::vector<std::string>& args) const 
+    {
         char** argv = new char*[args.size() + 1];
         for (size_t i = 0; i < args.size(); ++i) {
             argv[i] = new char[args[i].length() + 1];
@@ -197,15 +198,15 @@ private:
         std::string result;
         switch(err)
         {
-            case EAGAIN:
-                result = "The system lacked the necessary \
+            case eagain:
+                result = "the system lacked the necessary \
                     resources to create another process.";
             break;
-            case ENOMEM:
-                result = "Insufficient storage is available.";
+            case enomem:
+                result = "insufficient storage is available.";
             break;
             default:
-                result = "Uknown error code.";
+                result = "uknown error code.";
         }
         return result;
     }
