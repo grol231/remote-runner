@@ -133,28 +133,30 @@ private:
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             return response + message + "\n";
         }
+// Fork goes to runner.h. 
         pid_t pid = fork();
         int err(0);
         if(pid < 0)
         {
             std::cout << "fork fail!" << std::endl;
             response += ":fork fail - ";
-            std::string message = ProcessError(errno);
-            response += message;
+            //std::string message = ProcessError(errno);
+            //response += message;
             record.Result = "fail";
-            record.Note = message; 
+            //record.Note = message; 
             ++statistic_.NotRunningCommandCounter;
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             return response;
         }
         if(!pid)
         {
-            char** argv = CreateArgv(args);
-            execvp(command.c_str(),argv );
-            std::string message = ProcessError(errno);
-            response += message;
+            runner_->Power(args);
+           // char** argv = CreateArgv(args);
+           // execvp(command.c_str(),argv );
+           // std::string message = ProcessError(errno);
+            //response += message;
             record.Result = "fail";
-            record.Note = message;             
+            //record.Note = message;             
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             perror("child");
             exit(1);
@@ -183,6 +185,7 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
     std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:    
+    /*
     char** createargv(const std::vector<std::string>& args) const 
     {
         char** argv = new char*[args.size() + 1];
@@ -193,6 +196,7 @@ private:
         argv[args.size()] = nullptr;
         return argv;
     }
+
     std::string ProcessError(int err)
     {
         std::string result;
@@ -210,6 +214,7 @@ private:
         }
         return result;
     }
+    */
 
     std::string response_;
     boost::asio::io_service& ios_;

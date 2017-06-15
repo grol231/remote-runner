@@ -5,7 +5,19 @@ class Runner
 {
 public:
     Runner(){}
-    void Power()
+ 
+    char** CreateArgv(const std::vector<std::string>& args) const 
+    {
+        char** argv = new char*[args.size() + 1];
+        for (size_t i = 0; i < args.size(); ++i) {
+            argv[i] = new char[args[i].length() + 1];
+            strcpy(argv[i], args[i].c_str());
+        }        
+        argv[args.size()] = nullptr;
+        return argv;
+    }
+
+    void Power(std::vector<std::string>& agrs)
     {/*
             char** argv = CreateArgv(args);
             execvp(command.c_str(),argv );
@@ -18,8 +30,24 @@ public:
             exit(1);
      */
     }
-    void CreateArgv(){}
-    void ProcessError(){}
+    std::string ProcessError(int err)
+    {
+        std::string result;
+        switch(err)
+        {
+            case EAGAIN:
+                result = "the system lacked the necessary \
+                    resources to create another process.";
+            break;
+            case ENOMEM:
+                result = "insufficient storage is available.";
+            break;
+            default:
+                result = "uknown error code.";
+        }
+        return result;
+ 
+    }
     void Kill()
     {
         /*
@@ -37,35 +65,10 @@ public:
          */   
 
     }
-    
-    char** CreateArgv(const std::vector<std::string>& args) const 
-    {
-        char** argv = new char*[args.size() + 1];
-        for (size_t i = 0; i < args.size(); ++i) {
-            argv[i] = new char[args[i].length() + 1];
-            strcpy(argv[i], args[i].c_str());
-        }        
-        argv[args.size()] = nullptr;
-        return argv;
-    }
-    /* 
+       /* 
     std::string processerror(int err)
     {
-        std::string result;
-        switch(err)
-        {
-            case eagain:
-                result = "the system lacked the necessary \
-                    resources to create another process.";
-            break;
-            case enomem:
-                result = "insufficient storage is available.";
-            break;
-            default:
-                result = "uknown error code.";
-        }
-        return result;
-    }
+   }
 
 
     
