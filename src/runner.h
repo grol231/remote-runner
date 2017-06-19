@@ -17,7 +17,10 @@ public:
         return argv;
     }
 
-    void Power(std::vector<std::string>& agrs)
+
+    void Fork(){
+    }
+    void Execute(std::vector<std::string>& agrs)
     {/*
             char** argv = CreateArgv(args);
             execvp(command.c_str(),argv );
@@ -61,7 +64,8 @@ public:
                 else                
                     ++statistic_.CompletedCommandCounter;                
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
-            });            
+            }); 
+            responce += "Successful launch!";           
          */   
 
     }
