@@ -133,8 +133,9 @@ private:
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             return response + message + "\n";
         }
+        runner_->Execute(command, args);
 // Fork goes to runner.h. 
-        pid_t pid = fork();
+      /*  pid_t pid = fork();
         int err(0);
         if(pid < 0)
         {
@@ -157,7 +158,8 @@ private:
             ++statistic_.RunningCommandCounter;
             record.Result = "success";
             runner_->Kill();
-         }            
+         }
+*/         
         response += "\n";
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
         return response;

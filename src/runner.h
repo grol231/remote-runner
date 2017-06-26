@@ -4,35 +4,39 @@
 class Runner 
 {
 public:
-    Runner(){}
+    Runner(boost::asio::io_service& ios):
+    timer_(ios){}
  
-    char** CreateArgv(const std::vector<std::string>& args) const 
+    
+    void Execute(std::string& command, std::vector<std::string>& args)
     {
-        char** argv = new char*[args.size() + 1];
-        for (size_t i = 0; i < args.size(); ++i) {
-            argv[i] = new char[args[i].length() + 1];
-            strcpy(argv[i], args[i].c_str());
-        }        
-        argv[args.size()] = nullptr;
-        return argv;
+        pid_t pid = fork();
+        int err(0);
+        if(pid < 0)
+        {
+            std::cout << "fork fail!" << std::endl;
+            //response += ":fork fail - ";
+            //std::string message = ProcessError(errno);
+            //response += message;
+           // record.Result = "fail";
+            //record.Note = message; 
+           // ++statistic_.NotRunningCommandCounter;
+            //BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
+            //return response;
+        }
+        if(!pid)
+        {
+            DoExecute(command, args);
+        }
+        else
+        {            
+            //++statistic_.RunningCommandCounter;
+            //record.Result = "success";
+            Kill();
+         }            
+
     }
 
-
-    void Fork(){
-    }
-    void Execute(std::vector<std::string>& agrs)
-    {/*
-            char** argv = CreateArgv(args);
-            execvp(command.c_str(),argv );
-            std::string message = ProcessError(errno);
-            response += message;
-            record.Result = "fail";
-            record.Note = message;             
-            BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-            perror("child");
-            exit(1);
-     */
-    }
     std::string ProcessError(int err)
     {
         std::string result;
@@ -53,7 +57,7 @@ public:
     }
     void Kill()
     {
-        /*
+        
          size_t num = timer_.expires_from_now(config->Timeout());
             if(0!=num)
                 std::cout << "Too late! Timer already expires!" <<  std::endl;
@@ -66,20 +70,37 @@ public:
                 std::cout << "Kill child process! pId:" << pid <<  std::endl;
             }); 
             responce += "Successful launch!";           
-         */   
+            
 
     }
-       /* 
-    std::string processerror(int err)
-    {
-   }
-
-
-    
-    
-     * */
     Runner& operator=(const Runner&) = delete;
     Runner(const Runner&) = delete;
+private:
+    void DoExecute(std::string& command, std::vector<std::string>& args) 
+    {
+            char** argv = CreateArgv(args);
+            execvp(command.c_str(),argv );
+           // std::string message = ProcessError(errno);
+           // response += message;
+           // record.Result = "fail";
+           // record.Note = message;             
+           // BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
+            perror("child");
+            exit(1);     
+    }
+    char** CreateArgv(const std::vector<std::string>& args) const 
+    {
+        char** argv = new char*[args.size() + 1];
+        for (size_t i = 0; i < args.size(); ++i) {
+            argv[i] = new char[args[i].length() + 1];
+            strcpy(argv[i], args[i].c_str());
+        }        
+        argv[args.size()] = nullptr;
+        return argv;
+    }
+
+    boost::asio::deadline_timer timer_;
+
 };
 
 #endif
