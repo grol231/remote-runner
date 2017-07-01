@@ -1,15 +1,31 @@
 #ifndef __Runner_H__
 #define __Runner_H__
 
+#include <signal.h>
+#include <unistd.h>
+#include <errno.h>
+#include <iostream>
+#include <thread>
+#include <memory>
+#include <string>
+#include <chrono>
+#include <boost/asio.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/error.hpp>
+#include <boost/algorithm/string.hpp>
+#include "log.h"
+#include "config.h"
+
 class Runner 
 {
 public:
-    Runner(boost::asio::io_service& ios):
-    timer_(ios){}
- 
-    
-    void Execute(std::string& command, std::vector<std::string>& args)
+    Runner(boost::asio::io_service& ios, boost::posix_time::seconds timeout):
+        timeout_(timeout),
+        timer_(ios){}    
+    std::shared_ptr<Logging::Statistic> Execute(std::string& command, std::vector<std::string>& args)
     {
+        std::shared_ptr<Logging::Statistic> stat(std::make_shared<Logging::Statistic>());
         pid_t pid = fork();
         int err(0);
         if(pid < 0)
@@ -20,7 +36,7 @@ public:
             //response += message;
            // record.Result = "fail";
             //record.Note = message; 
-           // ++statistic_.NotRunningCommandCounter;
+            ++stat->NotRunningCommandCounter;
             //BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             //return response;
         }
@@ -30,13 +46,12 @@ public:
         }
         else
         {            
-            //++statistic_.RunningCommandCounter;
+            ++stat->RunningCommandCounter;
             //record.Result = "success";
-            Kill();
-         }            
-
+            Kill(pid, stat);
+         }          
+        return stat;
     }
-
     std::string ProcessError(int err)
     {
         std::string result;
@@ -55,23 +70,21 @@ public:
         return result;
  
     }
-    void Kill()
-    {
-        
-         size_t num = timer_.expires_from_now(config->Timeout());
-            if(0!=num)
-                std::cout << "Too late! Timer already expires!" <<  std::endl;
-            timer_.async_wait([this,pid](const boost::system::error_code& ec){
-                unsigned int result = kill(pid,SIGKILL);
-                if(result == 0)                
-                    ++statistic_.CompletedCompulsorilyCommandCounter;                
-                else                
-                    ++statistic_.CompletedCommandCounter;                
-                std::cout << "Kill child process! pId:" << pid <<  std::endl;
-            }); 
-            responce += "Successful launch!";           
-            
-
+    void Kill(pid_t pid,std::shared_ptr<Logging::Statistic> stat)
+    {    
+        std::string record;    
+        size_t num = timer_.expires_from_now(timeout_);
+           if(0!=num)
+               std::cout << "Too late! Timer already expires!" <<  std::endl;
+           timer_.async_wait([this,pid,stat](const boost::system::error_code& ec){
+               unsigned int result = kill(pid,SIGKILL);
+               if(result == 0)                
+                   ++stat->CompletedCompulsorilyCommandCounter;                
+               else                
+                   ++stat->CompletedCommandCounter;                
+               std::cout << "Kill child process! pId:" << pid <<  std::endl;
+           }); 
+        record += "Successful launch!";//TODO: What is it?                  
     }
     Runner& operator=(const Runner&) = delete;
     Runner(const Runner&) = delete;
@@ -98,9 +111,7 @@ private:
         argv[args.size()] = nullptr;
         return argv;
     }
-
+    boost::posix_time::seconds timeout_;
     boost::asio::deadline_timer timer_;
-
 };
-
 #endif

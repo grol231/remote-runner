@@ -63,6 +63,14 @@ struct Statistic
     unsigned long long int CompletedCompulsorilyCommandCounter;
     unsigned long long int DownloadedData;
     unsigned long long int UploadedData;
+    void AddCounters(const Statistic& s)
+    {
+        RunningCommandCounter += s.RunningCommandCounter;
+        NotRunningCommandCounter += s.NotRunningCommandCounter;
+        CompletedCommandCounter += s.CompletedCommandCounter;
+        CompletedCompulsorilyCommandCounter += s.CompletedCompulsorilyCommandCounter;        
+    }
+
 };
 //TODO: I must make two log files. Log will use mutable_constant for
 // file name. Mutable_const has shared_mutex.

@@ -40,7 +40,6 @@ public:
     {
         std::cout << "Stop" << std::endl;
         isStopped_.store(true);
-        //sock.shutdown(error::shutdawn_send)
     }
 private:
     void InitAccept()
@@ -63,8 +62,9 @@ private:
         if (ec == 0)
         {
             std::shared_ptr<Service> service(
-                    new Service(sock, ios_, connect_counter_, log_));
-            service->StartHandling(config_);
+                    new Service(sock, ios_, connect_counter_, log_, 
+                                config_->Timeout(), config_->AllowCommands()));
+            service->StartHandling();
         }
         else
         {
