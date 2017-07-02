@@ -20,23 +20,24 @@
 class Runner 
 {
 public:
-    Runner(boost::asio::io_service& ios, boost::posix_time::seconds timeout):
+    Runner(boost::asio::io_service& ios, boost::posix_time::seconds timeout, std::shared_ptr<Logging::Statistic> stat):
         timeout_(timeout),
-        timer_(ios){}    
-    std::shared_ptr<Logging::Statistic> Execute(std::string& command, std::vector<std::string>& args)
+        timer_(ios),
+        stat_(stat){}    
+    void Execute(std::string& command, std::vector<std::string>& args)
     {
-        std::shared_ptr<Logging::Statistic> stat(std::make_shared<Logging::Statistic>());
+       // std::shared_ptr<Logging::Statistic> stat(std::make_shared<Logging::Statistic>());
         pid_t pid = fork();
         int err(0);
         if(pid < 0)
         {
             std::cout << "fork fail!" << std::endl;
             //response += ":fork fail - ";
-            //std::string message = ProcessError(errno);
+            std::string message = ProcessError(errno);
             //response += message;
            // record.Result = "fail";
             //record.Note = message; 
-            ++stat->NotRunningCommandCounter;
+            ++stat_->NotRunningCommandCounter;
             //BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             //return response;
         }
@@ -46,11 +47,10 @@ public:
         }
         else
         {            
-            ++stat->RunningCommandCounter;
+            ++stat_->RunningCommandCounter;
             //record.Result = "success";
-            Kill(pid, stat);
-         }          
-        return stat;
+            Kill(pid);
+        }                  
     }
     std::string ProcessError(int err)
     {
@@ -70,18 +70,18 @@ public:
         return result;
  
     }
-    void Kill(pid_t pid,std::shared_ptr<Logging::Statistic> stat)
+    void Kill(pid_t pid)
     {    
         std::string record;    
         size_t num = timer_.expires_from_now(timeout_);
            if(0!=num)
                std::cout << "Too late! Timer already expires!" <<  std::endl;
-           timer_.async_wait([this,pid,stat](const boost::system::error_code& ec){
+           timer_.async_wait([this,pid](const boost::system::error_code& ec){
                unsigned int result = kill(pid,SIGKILL);
                if(result == 0)                
-                   ++stat->CompletedCompulsorilyCommandCounter;                
+                   ++stat_->CompletedCompulsorilyCommandCounter;                
                else                
-                   ++stat->CompletedCommandCounter;                
+                   ++stat_->CompletedCommandCounter;                
                std::cout << "Kill child process! pId:" << pid <<  std::endl;
            }); 
         record += "Successful launch!";//TODO: What is it?                  
@@ -113,5 +113,6 @@ private:
     }
     boost::posix_time::seconds timeout_;
     boost::asio::deadline_timer timer_;
+    std::shared_ptr<Logging::Statistic> stat_;
 };
 #endif

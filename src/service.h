@@ -136,9 +136,9 @@ private:
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             return response + message + "\n";
         }
-        std::shared_ptr<Logging::Statistic> statistic = runner_->Execute(command, args);
+        runner_->Execute(command, args);
         //It is depend on statistic we must make response.
-        statistic_->AddCounters(*statistic.get());
+        //statistic_->AddCounters(*statistic.get());
 // Fork goes to runner.h. 
       /*  pid_t pid = fork();
         int err(0);

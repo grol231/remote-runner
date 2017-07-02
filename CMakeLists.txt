@@ -12,7 +12,7 @@ if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     add_executable(main src/main.cpp src/server.h src/acceptor.h 
         src/service.h src/config.h src/application.h src/log.h src/daemon.h
-        src/runner.h)
+        src/runner.h src/registrar.h)
     target_link_libraries(main ${Boost_LIBRARIES})
     target_link_libraries (main ${CMAKE_THREAD_LIBS_INIT})
 endif()
