@@ -17,7 +17,9 @@
 #include "log.h"
 #include "config.h"
 #include "runner.h"
+#include "registrar.h"
 
+//TODO:
 //namespace rr{} //remote-runnerd
 
 class Service : public std::enable_shared_from_this<Service>
@@ -36,7 +38,8 @@ public:
             statistic_(std::make_shared<Logging::Statistic>()),
             log_(log),
             runner_(std::make_shared<Runner>(ios_, timeout, statistic_)),
-            allow_commands_(allow_commands)
+            allow_commands_(allow_commands),
+            registrar_(std::make_shared<Registrar>())
     {
         std::cout << "Service created." << std::endl;
         statistic_->ConnectID = connect_id;
@@ -182,5 +185,6 @@ private:
     std::shared_ptr<boost::asio::streambuf> buffer_;
     std::shared_ptr<Runner> runner_;
     std::vector<std::string> allow_commands_;
+    std::shared_ptr<Registrar> registrar_;
 };
 #endif

@@ -16,14 +16,19 @@
 #include <boost/algorithm/string.hpp>
 #include "log.h"
 #include "config.h"
-
+class Registrar;
 class Runner 
 {
 public:
-    Runner(boost::asio::io_service& ios, boost::posix_time::seconds timeout, std::shared_ptr<Logging::Statistic> stat):
+    Runner(boost::asio::io_service& ios, 
+           boost::posix_time::seconds timeout, 
+           std::shared_ptr<Logging::Statistic> statistic,
+           std::shared_ptr<Registrar> registrar):
         timeout_(timeout),
         timer_(ios),
-        stat_(stat){}    
+        statistic_(statistic),
+        registrar_(registrar)
+        {}    
     void Execute(std::string& command, std::vector<std::string>& args)
     {
        pid_t pid = fork();
@@ -36,7 +41,7 @@ public:
             //response += message;
            // record.Result = "fail";
             //record.Note = message; 
-            ++stat_->NotRunningCommandCounter;
+            ++statatistic_->NotRunningCommandCounter;
             //BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             //return response;
         }
@@ -46,7 +51,7 @@ public:
         }
         else
         {            
-            ++stat_->RunningCommandCounter;
+            ++statistic_->RunningCommandCounter;
             //record.Result = "success";
             Kill(pid);
         }                  
@@ -78,9 +83,9 @@ public:
            timer_.async_wait([this,pid](const boost::system::error_code& ec){
                unsigned int result = kill(pid,SIGKILL);
                if(result == 0)                
-                   ++stat_->CompletedCompulsorilyCommandCounter;                
+                   ++statistic_->CompletedCompulsorilyCommandCounter;                
                else                
-                   ++stat_->CompletedCommandCounter;                
+                   ++statistic_->CompletedCommandCounter;                
                std::cout << "Kill child process! pId:" << pid <<  std::endl;
            }); 
         record += "Successful launch!";//TODO: What is it?                  
@@ -112,6 +117,7 @@ private:
     }
     boost::posix_time::seconds timeout_;
     boost::asio::deadline_timer timer_;
-    std::shared_ptr<Logging::Statistic> stat_;
+    std::shared_ptr<Logging::Statistic> statistic_;
+    std::shared_ptr<Registrar> registrar_;
 };
 #endif

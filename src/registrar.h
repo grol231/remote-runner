@@ -1,7 +1,26 @@
 #ifndef __Registrar_H__
 #define __Registrar_H_
 
-struct LogRecord
+struct Record;
+struct Statistic;
+class Registrar
+{
+public:
+    Registrar():
+        records_(),
+        statistic_(std::make_unique<Statistic>())
+    {}
+    
+    static void Write(const Record&){}
+    static void Write(){};
+    Registrar(const Registrar&) = delete;
+    Registrar& operator=(const Registrar&) = delete;
+private:
+    std::vector<Record> records_;
+    std::unique_ptr<Statistic> statistic_;
+};
+enum class Status: {Start,Stop};
+struct Record
 {
     unsigned long long int ConnectID;
     std::string Command;
@@ -27,13 +46,5 @@ struct Statistic
     unsigned long long int CompletedCompulsorilyCommandCounter;
     unsigned long long int DownloadedData;
     unsigned long long int UploadedData;
-};
-
-class Registrar
-{
-public:
-private:
-    std::vector<Record> records_;
-    Statistic statistic_;
 };
 #endif
