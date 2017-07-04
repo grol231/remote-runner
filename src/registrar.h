@@ -19,7 +19,7 @@ private:
     std::vector<Record> records_;
     std::unique_ptr<Statistic> statistic_;
 };
-enum class Status: {Start,Stop};
+enum class Status {Start,Stop};
 struct Record
 {
     unsigned long long int ConnectID;

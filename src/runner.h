@@ -41,7 +41,7 @@ public:
             //response += message;
            // record.Result = "fail";
             //record.Note = message; 
-            ++statatistic_->NotRunningCommandCounter;
+            ++statistic_->NotRunningCommandCounter;
             //BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             //return response;
         }

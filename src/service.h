@@ -37,7 +37,7 @@ public:
             timer_(ios_),
             statistic_(std::make_shared<Logging::Statistic>()),
             log_(log),
-            runner_(std::make_shared<Runner>(ios_, timeout, statistic_)),
+            runner_(std::make_shared<Runner>(ios_, timeout, statistic_, registrar_)),
             allow_commands_(allow_commands),
             registrar_(std::make_shared<Registrar>())
     {
