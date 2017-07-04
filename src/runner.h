@@ -26,8 +26,7 @@ public:
         stat_(stat){}    
     void Execute(std::string& command, std::vector<std::string>& args)
     {
-       // std::shared_ptr<Logging::Statistic> stat(std::make_shared<Logging::Statistic>());
-        pid_t pid = fork();
+       pid_t pid = fork();
         int err(0);
         if(pid < 0)
         {
