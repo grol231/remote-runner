@@ -33,10 +33,10 @@ private:
     };
     struct Statistic
     {   
-        unsigned long long int RunningCommandCounter;
-        unsigned long long int NotRunningCommandCounter;
-        unsigned long long int CompletedCommandCounter;
-        unsigned long long int CompletedCompulsorilyCommandCounter;
+        unsigned long long int RunCounter;
+        unsigned long long int FailRunCounter;
+        unsigned long long int TerminationCounter;
+        unsigned long long int ForcedTerminationCounter;
         unsigned long long int DownloadedData;
         unsigned long long int UploadedData;
     };
