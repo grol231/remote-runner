@@ -71,8 +71,7 @@ public:
             default:
                 result = "uknown error code.";
         }
-        return result;
- 
+        return result; 
     }
     void Kill(pid_t pid)
     {    
