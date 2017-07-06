@@ -48,6 +48,7 @@ public:
     {
         std::cout << "Service destroyed!" << std::endl;
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(*statistic_.get());
+        //LOG(registrar_.Print())
     }
     void StartHandling()
     {

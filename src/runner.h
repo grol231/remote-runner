@@ -16,6 +16,8 @@
 #include <boost/algorithm/string.hpp>
 #include "log.h"
 #include "config.h"
+
+
 class Registrar;
 class Runner 
 {
@@ -35,13 +37,16 @@ public:
         int err(0);
         if(pid < 0)
         {
-            std::cout << "fork fail!" << std::endl;
+            std::string error = ProcessError(errno);
+            registrar_->RegisterFailedLaunch(command, args, error);
+           
+           // std::cout << "fork fail!" << std::endl;
             //response += ":fork fail - ";
-            std::string message = ProcessError(errno);
+           
             //response += message;
            // record.Result = "fail";
             //record.Note = message; 
-            ++statistic_->NotRunningCommandCounter;
+            //++statistic_->NotRunningCommandCounter;
             //BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             //return response;
         }
@@ -50,8 +55,9 @@ public:
             DoExecute(command, args);
         }
         else
-        {            
-            ++statistic_->RunningCommandCounter;
+        {    
+            registrar_->RegisterLaunch(command, args);        
+            //++statistic_->RunningCommandCounter;
             //record.Result = "success";
             Kill(pid);
         }                  
@@ -77,17 +83,19 @@ public:
     {    
         std::string record;    
         size_t num = timer_.expires_from_now(timeout_);
-           if(0!=num)
-               std::cout << "Too late! Timer already expires!" <<  std::endl;
-           timer_.async_wait([this,pid](const boost::system::error_code& ec){
-               unsigned int result = kill(pid,SIGKILL);
-               if(result == 0)                
-                   ++statistic_->CompletedCompulsorilyCommandCounter;                
-               else                
-                   ++statistic_->CompletedCommandCounter;                
-               std::cout << "Kill child process! pId:" << pid <<  std::endl;
+           // if(0!=num)
+             //   std::cout << "Too late! Timer already expires!" <<  std::endl;
+            timer_.async_wait([this,pid](const boost::system::error_code& ec){
+                unsigned int result = kill(pid,SIGKILL);
+                if(result == 0)                
+                    registrar_->RegisterForcedTermination();
+                  // ++statistic_->CompletedCompulsorilyCommandCounter;                
+               else
+                    registrar_->RegisterTermination();            
+                //   ++statistic_->CompletedCommandCounter;                
+              // std::cout << "Kill child process! pId:" << pid <<  std::endl;
            }); 
-        record += "Successful launch!";//TODO: What is it?                  
+       // record += "Successful launch!";//TODO: What is it?                  
     }
     Runner& operator=(const Runner&) = delete;
     Runner(const Runner&) = delete;
@@ -96,6 +104,7 @@ private:
     {
             char** argv = CreateArgv(args);
             execvp(command.c_str(),argv );
+
            // std::string message = ProcessError(errno);
            // response += message;
            // record.Result = "fail";

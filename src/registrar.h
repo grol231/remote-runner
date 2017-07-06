@@ -25,7 +25,7 @@ public:
     Registrar(Registrar&&) = delete;
     Registrar&& operator=(Registrar&&) = delete;
 
-    void RegisterRun(std::string& name, std::vector<std::string>& args)
+    void RegisterLaunch(std::string& name, std::vector<std::string>& args)
     {
         ++statistic_.Launches;
         CommandInfo info;
@@ -36,7 +36,7 @@ public:
         //TODO: optimization! use std::move()!
         records_.push_back(info);
     }
-    void RegisterFailRun(std::string& name, std::vector<std::string>& args, std::string& reason)
+    void RegisterFailedLaunch(std::string& name, std::vector<std::string>& args, std::string& reason)
     {
         ++statistic_.FailedLaunches;
         CommandInfo info;
