@@ -1,8 +1,9 @@
 #ifndef __Registrar_H__
-#define __Registrar_H_
+#define __Registrar_H__
 
 #include <memory>
 #include <string>
+#include <vector>
 
 class Registrar
 {
@@ -16,11 +17,13 @@ public:
         statistic_.FailRunCounter = 0;
         statistic_.TerminationCounter = 0;
         statistic_.ForcedTerminationCounter = 0;
-        statistic_.DownloadedData = 0;
-        statistic_.UploadedData = 0;
+        statistic_.DownloadedDataCounter = 0;
+        statistic_.UploadedDataCounter = 0;
     }
     Registrar(const Registrar&) = delete;
     Registrar& operator=(const Registrar&) = delete;
+    Registrar(Registrar&&) = delete;
+    Registrar&& operator=(Registrar&&) = delete;
 
     void RegisterRun(std::string& name, std::vector<std::string>& args)
     {
@@ -61,18 +64,18 @@ public:
     }
     void RegisterDownload(std::size_t bytes_received)
     {
-        statistic_.DownloadedDataConter += bytes_received;
+        statistic_.DownloadedDataCounter += bytes_received;
     }
-    void RegisterUpload(std::size_t butes_transferred)
+    void RegisterUpload(std::size_t bytes_transferred)
     {
         statistic_.UploadedDataCounter += bytes_transferred;
     }
     std::string Print()
-    {
-        std::string result;
-        std::ostream os(&result);
-        so << "Good ";
-        return std::move(result);
+    {       
+        std::ostringstream os;
+        os << "It is some information about connections.";
+        //TODO: optimization!
+        return os.str();
     }
 private:
     struct CommandInfo
@@ -95,6 +98,6 @@ private:
     };
     std::vector<CommandInfo> records_;
     Statistic statistic_;
-    unsigned long long int connnect_id_;
+    unsigned long long int connect_id_;
 };
 #endif

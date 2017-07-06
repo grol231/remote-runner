@@ -39,12 +39,13 @@ public:
             log_(log),
             runner_(std::make_shared<Runner>(ios_, timeout, statistic_, registrar_)),
             allow_commands_(allow_commands),
-            registrar_(std::make_shared<Registrar>())
+            registrar_(std::make_shared<Registrar>(connect_id))
     {
         std::cout << "Service created." << std::endl;
         statistic_->ConnectID = connect_id;
     }
-    ~Service(){
+    ~Service()
+    {
         std::cout << "Service destroyed!" << std::endl;
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(*statistic_.get());
     }
