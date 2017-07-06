@@ -13,12 +13,12 @@ public:
         statistic_(),
         connect_id_(connect_id)
     {
-        statistic_.RunCounter = 0;
-        statistic_.FailRunCounter = 0;
-        statistic_.TerminationCounter = 0;
-        statistic_.ForcedTerminationCounter = 0;
-        statistic_.DownloadedDataCounter = 0;
-        statistic_.UploadedDataCounter = 0;
+        statistic_.Launches = 0;
+        statistic_.FailedLaunches = 0;
+        statistic_.Terminations = 0;
+        statistic_.ForcedTerminations = 0;
+        statistic_.DownloadedBytes = 0;
+        statistic_.UploadedBytes = 0;
     }
     Registrar(const Registrar&) = delete;
     Registrar& operator=(const Registrar&) = delete;
@@ -27,54 +27,85 @@ public:
 
     void RegisterRun(std::string& name, std::vector<std::string>& args)
     {
-        ++statistic_.RunCounter;
+        ++statistic_.Launches;
         CommandInfo info;
         info.Name = name;
         info.Arguments = args;
         info.WasLaunched = true;
-        info.WasTerminated = false;
         info.WasKilled = false;
         //TODO: optimization! use std::move()!
         records_.push_back(info);
     }
     void RegisterFailRun(std::string& name, std::vector<std::string>& args, std::string& reason)
     {
-        ++statistic_.FailRunCounter;
+        ++statistic_.FailedLaunches;
         CommandInfo info;
         info.Name = name;
         info.Arguments = args;
         info.WasLaunched = false;
-        info.WasTerminated  = false;
         info.WasKilled = false;
         info.Note = reason; //Is it true wrote "reason"?
         records_.push_back(info);
     }
     void RegisterForcedTermination()
     {
-        ++statistic_.ForcedTerminationCounter;
+        ++statistic_.ForcedTerminations;
         auto record = records_.back();
         record.WasKilled = true;
-        record.WasTerminated = true;
     }
     void RegisterTermination()
     {
-        ++statistic_.TerminationCounter;
+        ++statistic_.Terminations;
         auto record = records_.back();
-        record.WasTerminated = true;
     }
     void RegisterDownload(std::size_t bytes_received)
     {
-        statistic_.DownloadedDataCounter += bytes_received;
+        statistic_.DownloadedBytes += bytes_received;
     }
     void RegisterUpload(std::size_t bytes_transferred)
     {
-        statistic_.UploadedDataCounter += bytes_transferred;
+        statistic_.UploadedBytes += bytes_transferred;
     }
     std::string Print()
     {       
         std::ostringstream os;
-        os << "It is some information about connections.";
-        //TODO: optimization!
+
+        os << "ConnectId #" << connect_id_ << std::endl;
+        os << "Statistic" << std::endl;
+        os << "Launches: " << statistic_.Launches  << std::endl;
+        os << "Failed launches: " << statistic_.FailedLaunches << std::endl;
+        os << "Terminations: " << statistic_.Terminations << std::endl;
+        os << "Forced Terminations: " << statistic_.ForcedTerminations << std::endl;
+        os << "Downloaded bytes: " << statistic_.DownloadedBytes << std::endl;
+        os << "Uploaded bytes: " << statistic_.UploadedBytes << std::endl;
+        os << std::endl;
+        for(const auto& record : records_)
+        {
+            os << "Command:" << record.Name << std::endl;
+            os << "Arguments:";
+            for(const auto& arg : record.Arguments)
+            {
+                os << arg << " ";
+            }
+            os << std::endl;
+            if(!record.WasLaunched)
+            {
+                os << "Program didn't launch. Error:" << record.Note << std::endl;
+            }
+            else
+            {
+                os << "The program was launched." << std::endl;
+                if(record.WasKilled)
+                {
+                    os << "The program was killed by timer." << std::endl;
+                }
+                else
+                {
+                    os << "The program terminated itself." << std::endl;
+                }
+            }
+        }
+        //TODO: use std::move
         return os.str();
     }
 private:
@@ -83,18 +114,17 @@ private:
         std::string Name;
         std::vector<std::string> Arguments;
         bool WasLaunched;
-        bool WasTerminated;
         bool WasKilled;
         std::string Note;    
     };
     struct Statistic
     {   
-        unsigned long long int RunCounter;
-        unsigned long long int FailRunCounter;
-        unsigned long long int TerminationCounter;
-        unsigned long long int ForcedTerminationCounter;
-        unsigned long long int DownloadedDataCounter;
-        unsigned long long int UploadedDataCounter;
+        unsigned long long int Launches;
+        unsigned long long int FailedLaunches;
+        unsigned long long int Terminations;
+        unsigned long long int ForcedTerminations;
+        unsigned long long int DownloadedBytes;
+        unsigned long long int UploadedBytes;
     };
     std::vector<CommandInfo> records_;
     Statistic statistic_;
