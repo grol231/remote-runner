@@ -99,17 +99,17 @@ private:
     void ReadConfigFile(std::string& path)
     {
         std::string command;
-        std::ifstream myfile (path.c_str());
-        if (myfile.is_open())
+        std::ifstream file (path.c_str());
+        if (file.is_open())
         {
-            while (getline(myfile,command))
+            while (getline(file,command))
             {
                 if(command.size() <= 1)//FIXME: This is crutch!
                     continue;
                 allow_commands_.push_back(command);
                 //std::cout << command << std::endl;
             }
-            myfile.close();
+            file.close();
         }
     }
     unsigned short port_;

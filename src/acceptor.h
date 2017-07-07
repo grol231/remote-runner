@@ -12,7 +12,7 @@ class Acceptor
 {
 public:
     Acceptor(boost::asio::io_service& ios,
-            src::severity_logger<logging::trivial::severity_level>& log,
+  //          src::severity_logger<logging::trivial::severity_level>& log,
             std::shared_ptr<Config> config)
         :ios_(ios),
         acceptor_(ios_,
@@ -23,7 +23,7 @@ public:
         ),
         isStopped_(false),
         connect_counter_(0),
-        log_(log),
+//        log_(log),
         config_(config)
     {}
     ~Acceptor()
@@ -62,7 +62,7 @@ private:
         if (ec == 0)
         {
             std::shared_ptr<Service> service(
-                    new Service(sock, ios_, connect_counter_, log_, 
+                    new Service(sock, ios_, connect_counter_, 
                                 config_->Timeout(), config_->AllowCommands()));
             service->StartHandling();
         }
@@ -86,7 +86,7 @@ private:
     boost::asio::ip::tcp::acceptor acceptor_;
     std::atomic<bool> isStopped_;
     unsigned long long int connect_counter_;
-    src::severity_logger<logging::trivial::severity_level>& log_;
+  //  src::severity_logger<logging::trivial::severity_level>& log_;
     std::shared_ptr<Config> config_;
 };
 #endif

@@ -16,7 +16,7 @@
 #include <boost/algorithm/string.hpp>
 #include "log.h"
 #include "config.h"
-
+#include "registrar.h"
 
 class Registrar;
 class Runner 
@@ -24,11 +24,11 @@ class Runner
 public:
     Runner(boost::asio::io_service& ios, 
            boost::posix_time::seconds timeout, 
-           std::shared_ptr<Logging::Statistic> statistic,
+//           std::shared_ptr<Logging::Statistic> statistic,
            std::shared_ptr<Registrar> registrar):
         timeout_(timeout),
         timer_(ios),
-        statistic_(statistic),
+  //      statistic_(statistic),
         registrar_(registrar)
         {}    
     void Execute(std::string& command, std::vector<std::string>& args)
@@ -125,7 +125,7 @@ private:
     }
     boost::posix_time::seconds timeout_;
     boost::asio::deadline_timer timer_;
-    std::shared_ptr<Logging::Statistic> statistic_;
+//    std::shared_ptr<Logging::Statistic> statistic_;
     std::shared_ptr<Registrar> registrar_;
 };
 #endif

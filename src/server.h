@@ -11,10 +11,8 @@
 class Server
 {
 public:
-    Server():
-        log_()
+    Server()
     {
-        Logging::InitializeLog();
         work_.reset(new boost::asio::io_service::work(ios_));
     }
     Server(const Server&) = delete;
@@ -27,7 +25,7 @@ public:
         unsigned int thread_pool_size)
     {
         assert(thread_pool_size > 0);
-        acceptor_.reset(new Acceptor(ios_, log_, config));
+        acceptor_.reset(new Acceptor(ios_,config));
         acceptor_->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
         {
@@ -51,6 +49,5 @@ private:
     std::unique_ptr<boost::asio::io_service::work> work_;
     std::unique_ptr<Acceptor> acceptor_;
     std::vector<std::unique_ptr<std::thread>> thread_pool_;
-    src::severity_logger<logging::trivial::severity_level> log_;
 };
 #endif

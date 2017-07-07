@@ -28,27 +28,22 @@ public:
     Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,     
         boost::asio::io_service& ios,
         unsigned long long int connect_id,
-        src::severity_logger<logging::trivial::severity_level>& log,
         boost::posix_time::seconds timeout,
         const std::vector<std::string>& allow_commands) :
             sock_(sock),
             buffer_(std::make_shared<boost::asio::streambuf>()),                   
             ios_(ios),
             timer_(ios_),
-            statistic_(std::make_shared<Logging::Statistic>()),
-            log_(log),
-            runner_(std::make_shared<Runner>(ios_, timeout, statistic_, registrar_)),
+            runner_(std::make_shared<Runner>(ios_, timeout, registrar_)),
             allow_commands_(allow_commands),
             registrar_(std::make_shared<Registrar>(connect_id))
     {
         std::cout << "Service created." << std::endl;
-        statistic_->ConnectID = connect_id;
     }
     ~Service()
     {
         std::cout << "Service destroyed!" << std::endl;
-        BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(*statistic_.get());
-        //LOG(registrar_.Print())
+        LOG(registrar_.Print())
     }
     void StartHandling()
     {
@@ -123,11 +118,8 @@ private:
         }
         std::cout << "ProcessRequest" << std::endl;
         std::string response = "Response";
-        Logging::LogRecord record;
         std::string command(args[0]);
-        record.Command = command;
-        record.Condition = "start";        
-        //create registrar!
+
         if(!allow_commands_.empty() &&
             allow_commands_.end() 
                 == 
@@ -135,10 +127,11 @@ private:
         {
             std::string message = " - not allow command!";
             std::cout << message << std::endl;
-            record.Result = "fail";
-            record.Note = message; 
-            ++statistic_->NotRunningCommandCounter;
-            BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
+            registrar_->RegistrarFailedLauncher(command,args,message);
+           // record.Result = "fail";
+           // record.Note = message; 
+           // ++statistic_->NotRunningCommandCounter;
+           // BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
             return response + message + "\n";
         }
         runner_->Execute(command, args);
@@ -171,7 +164,7 @@ private:
         }
 */         
         response += "\n";
-        BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
+       // BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
         return response;
     }
     std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
@@ -180,8 +173,6 @@ private:
     std::string response_;
     boost::asio::io_service& ios_;
     boost::asio::deadline_timer timer_;
-    std::shared_ptr<Logging::Statistic> statistic_;
-    src::severity_logger<logging::trivial::severity_level>& log_;
     std::function<void(void)> handling_;
     std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
     std::shared_ptr<boost::asio::streambuf> buffer_;
