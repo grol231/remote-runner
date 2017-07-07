@@ -33,21 +33,20 @@ public:
             sock_(sock),
             buffer_(std::make_shared<boost::asio::streambuf>()),                   
             ios_(ios),
-            timer_(ios_),
+            registrar_(std::make_shared<Registrar>(connect_id)),
             runner_(std::make_shared<Runner>(ios_, timeout, registrar_)),
-            allow_commands_(allow_commands),
-            registrar_(std::make_shared<Registrar>(connect_id))
+            allow_commands_(allow_commands)
     {
         std::cout << "Service created." << std::endl;
     }
     ~Service()
     {
         std::cout << "Service destroyed!" << std::endl;
-        LOG(registrar_.Print())
+   //     LOG(registrar_->Print());
     }
     void StartHandling()
     {
-       std::cout << "StartHandling" << std::endl;       
+       std::cout << "Service::StartHandling" << std::endl;       
        std::weak_ptr<Service> weakSelf = shared_from_this();
        handling_ = [weakSelf](){
            std::cout << "lambda: handling_" << std::endl;
@@ -81,8 +80,9 @@ public:
 private:
     void OnRequestReceived(std::size_t bytes_transferred)
     {
-        std::cout << "onRequestReceived" << std::endl;
+        std::cout << "Service::onRequestReceived" << std::endl;
         response_ = ProcessRequest(buffer_, bytes_transferred);
+        
         boost::asio::async_write(*sock_.get(),
             boost::asio::buffer(response_),
             [this](const boost::system::error_code& ec,
@@ -91,11 +91,12 @@ private:
                 onResponseSent(ec, bytes_transferred);
             }
         );
+        
     }
     void onResponseSent(const boost::system::error_code& ec,
         std::size_t bytes_transferred)
     {
-        std::cout << "onResponseSent" << std::endl;
+        std::cout << "Service::onResponseSent" << std::endl;
         if (ec != 0)
         {
             std::cout << "Error occured! Error code = "
@@ -107,6 +108,7 @@ private:
     std::string ProcessRequest(std::shared_ptr<boost::asio::streambuf> buffer,
             std::size_t bytes_transferred)
     {
+        std::cout << "Service::ProcessRequest" << std::endl;
         std::istream is(buffer.get());
         std::vector<std::string> args;
         while(is){
@@ -116,10 +118,7 @@ private:
                 break;            
             args.push_back(cmd);
         }
-        std::cout << "ProcessRequest" << std::endl;
-        std::string response = "Response";
         std::string command(args[0]);
-
         if(!allow_commands_.empty() &&
             allow_commands_.end() 
                 == 
@@ -127,52 +126,19 @@ private:
         {
             std::string message = " - not allow command!";
             std::cout << message << std::endl;
-            registrar_->RegistrarFailedLauncher(command,args,message);
-           // record.Result = "fail";
-           // record.Note = message; 
-           // ++statistic_->NotRunningCommandCounter;
-           // BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-            return response + message + "\n";
+            //registrar_->RegisterFailedLaunch(command,args,message);
+            //TODO: What does it write in responce?
+            return "Don't worry be happy!";
         }
         runner_->Execute(command, args);
-        //It is depend on statistic we must make response.
-        //statistic_->AddCounters(*statistic.get());
-// Fork goes to runner.h. 
-      /*  pid_t pid = fork();
-        int err(0);
-        if(pid < 0)
-        {
-            std::cout << "fork fail!" << std::endl;
-            response += ":fork fail - ";
-            //std::string message = trocessError(errno);
-            //response += message;
-            record.Result = "fail";
-            //record.Note = message; 
-            ++statistic_.NotRunningCommandCounter;
-            BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-            return response;
-        }
-        if(!pid)
-        {
-            runner_->Execute(args);
-        }
-        else
-        {            
-            ++statistic_.RunningCommandCounter;
-            record.Result = "success";
-            runner_->Kill();
-        }
-*/         
-        response += "\n";
-       // BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-        return response;
+       // response += "\n";
+       // TODO: What does it write in responce?
+        std::cout << "Parent process: Go out from Execute!"<< std::endl;
+        return "Don't worry be happy!";
     }
-    std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
-    std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:    
     std::string response_;
     boost::asio::io_service& ios_;
-    boost::asio::deadline_timer timer_;
     std::function<void(void)> handling_;
     std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
     std::shared_ptr<boost::asio::streambuf> buffer_;

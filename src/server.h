@@ -13,6 +13,7 @@ class Server
 public:
     Server()
     {
+        std::cout << "Server created!" << std::endl;
         work_.reset(new boost::asio::io_service::work(ios_));
     }
     Server(const Server&) = delete;

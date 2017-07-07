@@ -12,7 +12,6 @@ class Acceptor
 {
 public:
     Acceptor(boost::asio::io_service& ios,
-  //          src::severity_logger<logging::trivial::severity_level>& log,
             std::shared_ptr<Config> config)
         :ios_(ios),
         acceptor_(ios_,
@@ -23,9 +22,10 @@ public:
         ),
         isStopped_(false),
         connect_counter_(0),
-//        log_(log),
         config_(config)
-    {}
+    {
+        std::cout << "Acceptor created!" << std::endl;
+    }
     ~Acceptor()
     {
         std::cout << "Acceptor destroyed!" << std::endl;
@@ -48,8 +48,7 @@ private:
         std::shared_ptr<boost::asio::ip::tcp::socket>
             sock(new boost::asio::ip::tcp::socket(ios_));
         acceptor_.async_accept(*sock.get(),
-            [this, sock]( //TODO:Allow_commands must be a shared_ptr.
-            const boost::system::error_code& error)
+            [this, sock](const boost::system::error_code& error)
         {
             onAccept(error, sock);
         });
@@ -86,7 +85,6 @@ private:
     boost::asio::ip::tcp::acceptor acceptor_;
     std::atomic<bool> isStopped_;
     unsigned long long int connect_counter_;
-  //  src::severity_logger<logging::trivial::severity_level>& log_;
     std::shared_ptr<Config> config_;
 };
 #endif

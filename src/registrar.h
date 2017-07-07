@@ -19,6 +19,11 @@ public:
         statistic_.ForcedTerminations = 0;
         statistic_.DownloadedBytes = 0;
         statistic_.UploadedBytes = 0;
+        std::cout << "Registrar created!" << std::endl;
+    }
+    ~Registrar()
+    {
+        std::cout << "Registrar destoryed!" << std::endl;
     }
     Registrar(const Registrar&) = delete;
     Registrar& operator=(const Registrar&) = delete;
@@ -27,17 +32,31 @@ public:
 
     void RegisterLaunch(std::string& name, std::vector<std::string>& args)
     {
-        ++statistic_.Launches;
-        CommandInfo info;
-        info.Name = name;
-        info.Arguments = args;
-        info.WasLaunched = true;
-        info.WasKilled = false;
+        std::cout << "Registrar::RegisterLaunch" << std::endl;
+        try
+        {
+ //           std::cout << "statistic_.Launches: " << statistic_.Launches <<  std::endl;
+//        ++statistic_.Launches;
+       // CommandInfo info;
+       // info.Name = name;
+       // info.Arguments = args;
+       // info.WasLaunched = true;
+       // info.WasKilled = false;
         //TODO: optimization! use std::move()!
-        records_.push_back(info);
+       // records_.push_back(info);
+        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;            
+        }
+        catch(...)
+        {
+            std::cout << "Execption!" << std::endl;
+        }
     }
     void RegisterFailedLaunch(std::string& name, std::vector<std::string>& args, std::string& reason)
     {
+        std::cout << "Registrar::RegisterFailedLaunch" << std::endl;
         ++statistic_.FailedLaunches;
         CommandInfo info;
         info.Name = name;
@@ -49,25 +68,30 @@ public:
     }
     void RegisterForcedTermination()
     {
+        std::cout << "Registrar::RegisterForcedTermination" << std::endl;
         ++statistic_.ForcedTerminations;
         auto record = records_.back();
         record.WasKilled = true;
     }
     void RegisterTermination()
     {
+        std::cout << "Registrar::RegisterTermination" << std::endl;
         ++statistic_.Terminations;
         auto record = records_.back();
     }
     void RegisterDownload(std::size_t bytes_received)
     {
+        std::cout << "Registrar::RegisterDownload" << std::endl;
         statistic_.DownloadedBytes += bytes_received;
     }
     void RegisterUpload(std::size_t bytes_transferred)
     {
+        std::cout << "Registrar::RegisterUpload" << std::endl;
         statistic_.UploadedBytes += bytes_transferred;
     }
     std::string Print()
     {       
+        std::cout << "Registrar::Print" << std::endl;
         std::ostringstream os;
 
         os << "ConnectId #" << connect_id_ << std::endl;

@@ -11,7 +11,7 @@
 namespace RR
 {
     const std::string LOGFILE = "log.txt";
-    //optimization
+    //TODO:make  optimization!
     void Log(std::string entry)
     {
         //FIXIT: It is very bad code.
