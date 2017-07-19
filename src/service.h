@@ -33,8 +33,8 @@ public:
             sock_(sock),
             buffer_(std::make_shared<boost::asio::streambuf>()),                   
             ios_(ios),
-            registrar_(std::make_shared<Registrar>(connect_id)),
-            runner_(std::make_shared<Runner>(ios_, timeout, registrar_)),
+           // registrar_(std::make_shared<Registrar>(connect_id)),
+            runner_(std::make_shared<Runner>(ios_, timeout)),
             allow_commands_(allow_commands)
     {
         std::cout << "Service created." << std::endl;
@@ -144,6 +144,6 @@ private:
     std::shared_ptr<boost::asio::streambuf> buffer_;
     std::shared_ptr<Runner> runner_;
     std::vector<std::string> allow_commands_;
-    std::shared_ptr<Registrar> registrar_;
+   // std::shared_ptr<Registrar> registrar_;
 };
 #endif

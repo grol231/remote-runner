@@ -23,11 +23,10 @@ class Runner
 {
 public:
     Runner(boost::asio::io_service& ios, 
-           boost::posix_time::seconds timeout, 
-           std::shared_ptr<Registrar> registrar):
+           boost::posix_time::seconds timeout):
         timeout_(timeout),
-        timer_(ios),
-        registrar_(registrar)
+        timer_(ios)
+     //   registrar_(registrar)
     {
         std::cout << "Runner created!" << std::endl;
     }
@@ -48,7 +47,7 @@ public:
         if(pid < 0)
         {
             std::string error = ProcessError(errno);
-            registrar_->RegisterFailedLaunch(command, args, error);
+           // registrar_->RegisterFailedLaunch(command, args, error);
             std::cout << "Failed fork!" << std::endl;
         }
         if(!pid)
@@ -123,6 +122,6 @@ private:
     }
     boost::posix_time::seconds timeout_;
     boost::asio::deadline_timer timer_;
-    std::shared_ptr<Registrar> registrar_;
+   // std::shared_ptr<Registrar> registrar_;
 };
 #endif
