@@ -8,18 +8,23 @@
 class Registrar
 {
 public:
-    Registrar(unsigned long long int connect_id):
-        records_(),
-        statistic_(),
-        connect_id_(connect_id)
+    Registrar()//:
+//        records_(),
+  //      statistic_(),
+    //    connect_id_(connect_id)
     {
+        /*
+        printf("printf:Registrar created!");
+        pthread_t tid;
+        tid = pthread_self();
+        std::cout << "Registrar created! tid:" << tid  << std::endl;
         statistic_.Launches = 0;
         statistic_.FailedLaunches = 0;
         statistic_.Terminations = 0;
         statistic_.ForcedTerminations = 0;
         statistic_.DownloadedBytes = 0;
         statistic_.UploadedBytes = 0;
-        std::cout << "Registrar created!" << std::endl;
+        */
     }
     ~Registrar()
     {
@@ -29,7 +34,7 @@ public:
     Registrar& operator=(const Registrar&) = delete;
     Registrar(Registrar&&) = delete;
     Registrar&& operator=(Registrar&&) = delete;
-
+/*
     void RegisterLaunch(std::string& name, std::vector<std::string>& args)
     {
         std::cout << "Registrar::RegisterLaunch" << std::endl;
@@ -132,8 +137,9 @@ public:
         //TODO: use std::move
         return os.str();
     }
+*/
 private:
-    struct CommandInfo
+   /* struct CommandInfo
     {   
         std::string Name;
         std::vector<std::string> Arguments;
@@ -152,6 +158,6 @@ private:
     };
     std::vector<CommandInfo> records_;
     Statistic statistic_;
-    unsigned long long int connect_id_;
+    unsigned long long int connect_id_;*/
 };
 #endif

@@ -13,20 +13,11 @@ class Server
 public:
     Server()
     {
-        std::cout << "Server created!" << std::endl;
         work_.reset(new boost::asio::io_service::work(ios_));
     }
-    Server(const Server&) = delete;
-    Server& operator=(const Server&) = delete;
-    ~Server()
+    void Start( unsigned int thread_pool_size)
     {
-        std::cout << "Server destroyed!" << std::endl;
-    }
-    void Start(std::shared_ptr<Config> config,
-        unsigned int thread_pool_size)
-    {
-        assert(thread_pool_size > 0);
-        acceptor_.reset(new Acceptor(ios_,config));
+        acceptor_.reset(new Acceptor(ios_));
         acceptor_->Start();
         for (unsigned int i = 0; i < thread_pool_size; i++)
         {
@@ -38,7 +29,6 @@ public:
     }
     void Stop()
     {
-        acceptor_->Stop();
         ios_.stop();
         for (auto& th : thread_pool_)
         {

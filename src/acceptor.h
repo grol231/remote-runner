@@ -11,40 +11,24 @@
 class Acceptor
 {
 public:
-    Acceptor(boost::asio::io_service& ios,
-            std::shared_ptr<Config> config)
+    Acceptor(boost::asio::io_service& ios)
         :ios_(ios),
         acceptor_(ios_,
             boost::asio::ip::tcp::endpoint(
                 boost::asio::ip::address_v4::any(),
-                config->Port()
+                12345
             )
-        ),
-        isStopped_(false),
-        connect_counter_(0),
-        config_(config)
+        )
     {
-        std::cout << "Acceptor created!" << std::endl;
-    }
-    ~Acceptor()
-    {
-        std::cout << "Acceptor destroyed!" << std::endl;
     }
     void Start()
     {
-        std::cout << "Start" << std::endl;
         acceptor_.listen();
         InitAccept();
-    }
-    void Stop()
-    {
-        std::cout << "Stop" << std::endl;
-        isStopped_.store(true);
     }
 private:
     void InitAccept()
     {
-        std::cout << "InitAccept" << std::endl;
         std::shared_ptr<boost::asio::ip::tcp::socket>
             sock(new boost::asio::ip::tcp::socket(ios_));
         acceptor_.async_accept(*sock.get(),
@@ -52,39 +36,22 @@ private:
         {
             onAccept(error, sock);
         });
-        ++connect_counter_;
     }
     void onAccept(const boost::system::error_code& ec,
         std::shared_ptr<boost::asio::ip::tcp::socket> sock)
     {
-        std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
-            std::shared_ptr<Service> service(
-                    new Service(sock, ios_, connect_counter_, 
-                                config_->Timeout(), config_->AllowCommands()));
+           auto p = new Service(sock, ios_);
+            std::cout << "Let's create a shared_ptr!" << std::endl;
+            std::shared_ptr<Service> service(p);
+
             service->StartHandling();
         }
-        else
-        {
-            std::cout << "Error occured! Error code = "
-                << ec.value()
-                << ". Message: " << ec.message();
-        }
-        if (!isStopped_.load())
-        {
-            InitAccept();
-        }
-        else
-        {
-            acceptor_.close();
-        }
+        InitAccept();
     }
 private:
     boost::asio::io_service& ios_;
     boost::asio::ip::tcp::acceptor acceptor_;
-    std::atomic<bool> isStopped_;
-    unsigned long long int connect_counter_;
-    std::shared_ptr<Config> config_;
 };
 #endif

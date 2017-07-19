@@ -87,7 +87,7 @@ public:
     {
         return logging_;
     }
-    const std::vector<std::string>& AllowCommands() const
+    const std::vector<std::string> AllowCommands() const
     {
         return allow_commands_;    
     }
