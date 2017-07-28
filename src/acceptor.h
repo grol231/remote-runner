@@ -6,7 +6,6 @@
 #include <atomic>
 #include <boost/asio.hpp>
 #include "service.h"
-#include "log.h"
 
 class Acceptor
 {
@@ -29,6 +28,7 @@ public:
 private:
     void InitAccept()
     {
+        std::cout << "Acceptor::InitAccept" << std::endl;
         std::shared_ptr<boost::asio::ip::tcp::socket>
             sock(new boost::asio::ip::tcp::socket(ios_));
         acceptor_.async_accept(*sock.get(),
@@ -36,19 +36,20 @@ private:
         {
             onAccept(error, sock);
         });
+        std::cout << "End of Acceptor:InitAccept" << std::endl;
     }
     void onAccept(const boost::system::error_code& ec,
         std::shared_ptr<boost::asio::ip::tcp::socket> sock)
     {
+        std::cout << "Acceptor:OnAccept" << std::endl;
+        /*
         if (ec == 0)
         {
-           auto p = new Service(sock, ios_);
-            std::cout << "Let's create a shared_ptr!" << std::endl;
-            std::shared_ptr<Service> service(p);
-
+            std::shared_ptr<Service> service(std::make_shared<Service>(sock,ios_));
             service->StartHandling();
         }
         InitAccept();
+        */
     }
 private:
     boost::asio::io_service& ios_;

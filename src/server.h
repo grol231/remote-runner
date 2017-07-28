@@ -6,7 +6,6 @@
 #include <memory>
 #include <boost/asio.hpp>
 #include "acceptor.h"
-#include "log.h"
 
 class Server
 {
@@ -15,20 +14,27 @@ public:
     {
         work_.reset(new boost::asio::io_service::work(ios_));
     }
+    ~Server()
+    {
+        std::cout << "Server destroyed!" << std::endl;
+    }
     void Start( unsigned int thread_pool_size)
     {
+        std::cout << "Server::Start" << std::endl;
         acceptor_.reset(new Acceptor(ios_));
         acceptor_->Start();
-        for (unsigned int i = 0; i < thread_pool_size; i++)
+        for (unsigned int i = 0; i < thread_pool_size; ++i)
         {
             std::unique_ptr<std::thread> th(
                 new std::thread([this](){ios_.run();})
             );
             thread_pool_.push_back(std::move(th));
         }
+        std::cout << "End of Server::Start" << std::endl;
     }
     void Stop()
     {
+        acceptor_->Stop();
         ios_.stop();
         for (auto& th : thread_pool_)
         {

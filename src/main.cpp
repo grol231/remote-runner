@@ -7,5 +7,6 @@
 int main(int argc, char* argv[])
 {
        std::unique_ptr<Application> app(std::make_unique<Application>());
-        app->Initialize();
+       app->Initialize();
+       std::cout << "End of Application" << std::endl;
 }
