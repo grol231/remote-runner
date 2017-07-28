@@ -17,7 +17,8 @@ public:
                 boost::asio::ip::address_v4::any(),
                 12345
             )
-        )
+        ),
+        isStopped_(false)
     {
     }
     void Start()
@@ -25,6 +26,12 @@ public:
         acceptor_.listen();
         InitAccept();
     }
+    void Stop()
+    {
+        std::cout << "Stop" << std::endl;
+        isStopped_.store(true);
+    }
+
 private:
     void InitAccept()
     {
@@ -54,5 +61,6 @@ private:
 private:
     boost::asio::io_service& ios_;
     boost::asio::ip::tcp::acceptor acceptor_;
+    std::atomic<bool> isStopped_;
 };
 #endif
