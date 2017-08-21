@@ -19,6 +19,8 @@ public:
     }
     Server(const Server&) = delete;
     Server& operator=(const Server&) = delete;
+    Server(Server&&) = delete;
+    Server operator=(const Server&&) = delete;
     ~Server()
     {
         std::cout << "Server destroyed!" << std::endl;

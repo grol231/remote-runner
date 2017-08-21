@@ -26,15 +26,6 @@ namespace sinks = boost::log::sinks;
 namespace attrs = boost::log::attributes;
 
 const char* DEFAULT_LOG_FILE = "log.txt";
-/*
-using shared_mc = attrs::mutable_constant<
-    std::string,
-    boost::shared_mutex,
-    boost::unique_lock<boost::shared_mutex>,
-    boost::shared_lock<boost::shared_mutex>>;
-    */
-//TODO: Global variable! Fix it!
-//shared_mc logType("LogRecord");
 namespace Logging
 {
 struct LogRecord
@@ -49,24 +40,21 @@ struct Statistic
 {   
   Statistic():
     ConnectID(0),
-    RunningCommandCounter(0),
-    NotRunningCommandCounter(0),
-    CompletedCommandCounter(0),
-    CompletedCompulsorilyCommandCounter(0),
-    DownloadedData(0),
-    UploadedData(0)
+    Launches(0),
+    FailedLaunches(0),
+    Terminations(0),
+    ForcedTerminations(0),
+    DownloadedBytes(0),
+    UploadedBytes(0)
     {}
     unsigned long long int ConnectID;
-    unsigned long long int RunningCommandCounter;
-    unsigned long long int NotRunningCommandCounter;
-    unsigned long long int CompletedCommandCounter;
-    unsigned long long int CompletedCompulsorilyCommandCounter;
-    unsigned long long int DownloadedData;
-    unsigned long long int UploadedData;
+    unsigned long long int Launches;
+    unsigned long long int FailedLaunches;
+    unsigned long long int Terminations;
+    unsigned long long int ForcedTerminations;
+    unsigned long long int DownloadedBytes;
+    unsigned long long int UploadedBytes;
 };
-//TODO: I must make two log files. Log will use mutable_constant for
-// file name. Mutable_const has shared_mutex.
-//BOOST_LOG_INLINE_GLOBAL_LOGGER_INIT(my_logger, src::logger_mt) WTF?
 static void InitializeLog()
 {
     logging::add_file_log(
@@ -78,14 +66,12 @@ static void InitializeLog()
             "Record №%LineID%\n%TimeStamp%\n%Message%\n" 
     );
     logging::add_common_attributes();
-    //src::logger l;
     logging::core::get()->set_filter
     (   
         logging::trivial::severity >= logging::trivial::info
     );
 };
-//TODO: use stream!
-static std::string ToString(const LogRecord& record)//Why static?
+std::string ToString(const LogRecord& record)
 {
     return std::string("ConnectID #" + 
             std::to_string(record.ConnectID) + "\n" +
@@ -94,23 +80,22 @@ static std::string ToString(const LogRecord& record)//Why static?
            "Result : " +  record.Result +"\n"+ 
            "Note : " + record.Note);
 };
-//TODO: use stream! refactoring!
-static std::string ToString(const Statistic& s)
+std::string ToString(const Statistic& s)
 {
     std::string str;
     str += "ConnectID #" + std::to_string(s.ConnectID) + "\n";
-    str += "Command Statistic:\n    stoped = "; 
-    str += std::to_string(s.RunningCommandCounter);
-    str += "\n    not running = ";
-    str += std::to_string(s.NotRunningCommandCounter);
-    str += "\n    completed = ";
-    str += std::to_string(s.CompletedCommandCounter);
-    str += "\n    completed compulsorily = ";
-    str += std::to_string(s.CompletedCompulsorilyCommandCounter);
-    str += "\nTraffic Statistic:\n    downlowded data = ";
-    str += std::to_string(s.DownloadedData);
-    str += "\n    uploaded data = ";
-    str += std::to_string(s.UploadedData);
+    str += "Command Statistic:\n    Terminations = "; 
+    str += std::to_string(s.Terminations);
+    str += "\n    Forced Terminations = ";
+    str += std::to_string(s.ForcedTerminations);
+    str += "\n    Launches = ";
+    str += std::to_string(s.Launches);
+    str += "\n    Failed Launches = ";
+    str += std::to_string(s.FailedLaunches);
+    str += "\nTraffic Statistic:\n    Downlowded Bytes = ";
+    str += std::to_string(s.DownloadedBytes);
+    str += "\n    Uploaded Bytes = ";
+    str += std::to_string(s.UploadedBytes);
     str += "\n";
     return str;
 };

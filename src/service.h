@@ -31,19 +31,15 @@ public:
             statistic_(),
             log_(log)          
     {
-        std::cout << "Service created." << std::endl;
         statistic_.ConnectID = connect_id;
     }
     ~Service(){
-        std::cout << "Service destroyed!" << std::endl;
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(statistic_);
     }
     void StartHandling(std::shared_ptr<Config> config)
     {
-       std::cout << "StartHandling" << std::endl;       
        std::weak_ptr<Service> weakSelf = shared_from_this();
        handling_ = [weakSelf, config](){
-           std::cout << "lambda: handling_" << std::endl;
            std::shared_ptr<Service> self = weakSelf.lock();
            boost::asio::async_read_until(*self->sock_.get(),
                *self->buffer_.get(),
@@ -53,13 +49,11 @@ public:
               { 
                      if(0 == ec)
                      {
-                         if(1 < bytes_transffered)//This is crutch!
+                         if(1 < bytes_transffered)
                          {                              
-                             std::cout<<"Async operation success!"<<std::endl;
                              self->OnRequestReceived(bytes_transffered, config);
                          }
                          self->buffer_->consume(bytes_transffered);
-                         std::cout << "handling_ call himself!" << std::endl;
                          self->handling_();
                      }
                      else
@@ -75,7 +69,6 @@ private:
     void OnRequestReceived(std::size_t bytes_transferred,
             std::shared_ptr<Config> config)
     {
-        std::cout << "onRequestReceived" << std::endl;
         response_ = ProcessRequest(buffer_, bytes_transferred, config);
         boost::asio::async_write(*sock_.get(),
             boost::asio::buffer(response_),
@@ -89,7 +82,6 @@ private:
     void onResponseSent(const boost::system::error_code& ec,
         std::size_t bytes_transferred)
     {
-        std::cout << "onResponseSent" << std::endl;
         if (ec != 0)
         {
             std::cout << "Error occured! Error code = "
@@ -111,74 +103,43 @@ private:
                 break;            
             args.push_back(cmd);
         }
-        std::cout << "ProcessRequest" << std::endl;
-        std::string response = "Response";
-        //std::cout << "Request:" << command << std::endl;
         Logging::LogRecord record;
-        std::string command(args[0]);
-        record.Command = command;
+        record.Command = args[0];
         record.Condition = "start";        
         auto list = config->AllowCommands();
         if(!list.empty() &&
             list.end() 
                 == 
-            std::find(list.begin(), list.end(), command))
+            std::find(list.begin(), list.end(), args[0]))
         {
-            std::string message = " - not allow command!";
-            std::cout << message << std::endl;
+            std::string message = "not allow command!";
             record.Result = "fail";
             record.Note = message; 
-            ++statistic_.NotRunningCommandCounter;
+            ++statistic_.FailedLaunches;
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-            return response + message + "\n";
+            return message;
         }
-        pid_t pid = fork();//todo: error handling
+        pid_t pid = fork();
         int err(0);
         if(pid < 0)
         {
-            std::cout << "fork fail!" << std::endl;
-            response += ":fork fail - ";
             std::string message = ProcessError(errno);
-            response += message;
             record.Result = "fail";
             record.Note = message; 
-            ++statistic_.NotRunningCommandCounter;
+            ++statistic_.FailedLaunches;
             BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-            return response;
+            return record.Result;
         }
         if(!pid)
         {
-           /* std::cout << "child:" << pid  << std::endl;                        
-            std::cout << "command : " << command << std::endl;
-            std::cout << "args : " << std::endl;
-            for(auto& i : args)
-                std::cout << i << std::endl;*/
-           // std::vector<std::string> v = {"vlc","video.mp4"};
-           // char** argv = CreateArgv(v);
-           /* std::cout << "argv : " << std::endl;
-            std::cout << argv[0] << std::endl;
-            std::cout << argv[1] << std::endl;*/
-           /* std::vector<std::string> v = {"vlc"};
-            char** a = new char*[2]; 
-            a[0] = new char[4];
-            a[1] = nullptr;
-            strcpy(a[0],v[0].c_str());
-            std::cout << "a[0] = " << a[0] << std::endl;
-            std::cout << "a[1] = " << a[1] << std::endl; 
-            execvp(a[0],a);*/
             char** argv = CreateArgv(args);
-            execvp(command.c_str(),argv );
-            std::string message = ProcessError(errno);
-            response += message;
-            record.Result = "fail";
-            record.Note = message;             
-            BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
+            execvp(args[0].c_str(),argv );
             perror("child");
             exit(1);
         }
         else
         {            
-            ++statistic_.RunningCommandCounter;
+            ++statistic_.Launches;
             record.Result = "success";
             size_t num = timer_.expires_from_now(config->Timeout());
             if(0!=num)
@@ -186,19 +147,14 @@ private:
             timer_.async_wait([this,pid](const boost::system::error_code& ec){
                 unsigned int result = kill(pid,SIGKILL);
                 if(result == 0)                
-                    ++statistic_.CompletedCompulsorilyCommandCounter;                
+                    ++statistic_.ForcedTerminations;                
                 else                
-                    ++statistic_.CompletedCommandCounter;                
-                std::cout << "Kill child process! pId:" << pid <<  std::endl;
+                    ++statistic_.Terminations;                
             });            
-            response += " : Successful launch!";
         }            
-        response += "\n";
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-        return response;
+        return record.Result;
     }
-    std::shared_ptr<boost::asio::ip::tcp::socket> Socket(){return sock_;}
-    std::shared_ptr<boost::asio::streambuf> Buffer(){return buffer_;}
 private:    
     char** CreateArgv(const std::vector<std::string>& args) const {
         char** argv = new char*[args.size() + 1];

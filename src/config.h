@@ -7,7 +7,7 @@
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-const unsigned short DEFAULT_PORT_NUM = 12345;//TODO This const puts to class.
+const unsigned short DEFAULT_PORT_NUM = 12345;
 const boost::posix_time::seconds DEFAULT_TIMEOUT(5);
 
 class Config
@@ -29,11 +29,9 @@ public:
                 is_daemon_ = false;
             }
             if(std::string::npos != command.find("-path="))
-            {
-                //std::cout << "Found -path=!" << std::endl;
+            {                
                 std::string path(command,
-                    command.find('=')+1, command.size()-command.find('=')-1);
-                //std::cout << "path: " << path << std::endl;
+                    command.find('=')+1, command.size()-command.find('=')-1);                
                 ReadConfigFile(path);
             }
             if(command.compare("-log") == 0)
@@ -43,8 +41,7 @@ public:
             if(std::string::npos != command.find("-timeout="))
             {
                 std::string str_timeout(command,
-                    command.find('=')+1, command.size()-command.find('=')-1);
-                //TODO: Rewrite type conversion.
+                    command.find('=')+1, command.size()-command.find('=')-1);                
                 timeout_ = static_cast<boost::posix_time::seconds>(
                         std::stoi(str_timeout));
             }
@@ -55,26 +52,15 @@ public:
                 port_ = static_cast<unsigned>(std::stoi(str_port));
             }
         }
-        std::cout << std::endl;
-        std::cout << "timeout:" << timeout_ << std::endl;
-        std::cout << "logging:"//TODO:Rewrite!
-            << std::string((logging_)?"true":"false") << std::endl;
-        std::cout << "port:" << port_ << std::endl;
-        std::cout << "allow commands:";
-        for(auto& command : allow_commands_)
-        {
-            std::cout << command << " ";
-        }
-        std::cout << std::endl;
-        std::cout << "is_daemon:" << is_daemon_ << std::endl;        
     }
     ~Config()
     {
-        std::cout << "Config destroyed!" << std::endl;
     }
     Config(const Config&) = delete;
     Config& operator=(const Config&) = delete;
     Config() = delete;
+    Config(Config&&) = delete;
+    Config&& operator=(Config&&) = delete;
     const unsigned Port() const
     {
         return port_;
@@ -104,17 +90,16 @@ private:
         {
             while (getline(myfile,command))
             {
-                if(command.size() <= 1)//FIXME: This is crutch!
+                if(command.size() <= 1)
                     continue;
                 allow_commands_.push_back(command);
-                //std::cout << command << std::endl;
             }
             myfile.close();
         }
     }
     unsigned short port_;
-    std::vector<std::string> allow_commands_;//TODO:Use shared_ptr!
-    boost::posix_time::seconds timeout_; //FIXME: std::chrono
+    std::vector<std::string> allow_commands_;
+    boost::posix_time::seconds timeout_;
     bool logging_;
     bool is_daemon_;
 };

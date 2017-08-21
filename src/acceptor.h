@@ -28,11 +28,9 @@ public:
     {}
     ~Acceptor()
     {
-        std::cout << "Acceptor destroyed!" << std::endl;
     }
     void Start()
     {
-        std::cout << "Start" << std::endl;
         acceptor_.listen();
         InitAccept();
     }
@@ -40,7 +38,6 @@ public:
     {
         std::cout << "Stop" << std::endl;
         isStopped_.store(true);
-        //sock.shutdown(error::shutdawn_send)
     }
 private:
     void InitAccept()
@@ -49,7 +46,7 @@ private:
         std::shared_ptr<boost::asio::ip::tcp::socket>
             sock(new boost::asio::ip::tcp::socket(ios_));
         acceptor_.async_accept(*sock.get(),
-            [this, sock]( //TODO:Allow_commands must be a shared_ptr.
+            [this, sock]( 
             const boost::system::error_code& error)
         {
             onAccept(error, sock);
@@ -59,7 +56,6 @@ private:
     void onAccept(const boost::system::error_code& ec,
         std::shared_ptr<boost::asio::ip::tcp::socket> sock)
     {
-        std::cout << "onAccept" << std::endl;
         if (ec == 0)
         {
             std::shared_ptr<Service> service(
