@@ -20,7 +20,6 @@ public:
     logging_(false),
     is_daemon_(true)
     {
-        std::cout << "Found ";
         for(unsigned i = 0; argc > i; ++i)
         {
             std::string command(argv[i]);

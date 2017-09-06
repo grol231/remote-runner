@@ -36,13 +36,11 @@ public:
     }
     void Stop()
     {
-        std::cout << "Stop" << std::endl;
         isStopped_.store(true);
     }
 private:
     void InitAccept()
     {
-        std::cout << "InitAccept" << std::endl;
         std::shared_ptr<boost::asio::ip::tcp::socket>
             sock(new boost::asio::ip::tcp::socket(ios_));
         acceptor_.async_accept(*sock.get(),

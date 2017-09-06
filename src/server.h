@@ -23,7 +23,6 @@ public:
     Server operator=(const Server&&) = delete;
     ~Server()
     {
-        std::cout << "Server destroyed!" << std::endl;
     }
     void Start(std::shared_ptr<Config> config,
         unsigned int thread_pool_size)

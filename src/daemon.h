@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
+
 class Daemon
 {
 public:
@@ -13,21 +14,14 @@ public:
         pid_t pid = fork();
         if(pid < 0)
         {
-            std::cout << "can't fork" << std::endl;            
             exit(1);
         }
         else
         {
             if(pid != 0)            
             {
-                std::cout << "I am in the parent." << std::endl;
                 exit(0);
             }
-            else
-            {
-                std::cout << "I am in the child." << std::endl;
-            }                
-       
         }
         setsid();
         unsigned int numFiles = sysconf(_SC_OPEN_MAX);
@@ -37,12 +31,11 @@ public:
         }
         init();
     }
-    ~Daemon()
-    {
-        std::cout << "Daemon distroyed!" << std::endl;
-    }
+    ~Daemon(){}
     Daemon() = delete;
     Daemon(const Daemon&) = delete;
     Daemon& operator=(const Daemon&) = delete;
+    Daemon(Daemon&&) = delete;
+    Daemon&& operator=(Daemon&&) = delete;
 };
 #endif

@@ -14,8 +14,8 @@
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/algorithm/string.hpp>
-#include "log.h"
 #include "config.h"
+#include "log.h"
 
 class Service : public std::enable_shared_from_this<Service>
 {
