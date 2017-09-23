@@ -1,7 +1,5 @@
 #include "application.h"
 
-const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
-
 void Application::Initialize(std::shared_ptr<Config> config)
 {
     if(config->isDaemon())
@@ -11,7 +9,7 @@ void Application::Initialize(std::shared_ptr<Config> config)
 }
 void Application::DoInitialize(std::shared_ptr<Config> config)
 {
-    std::shared_ptr<Server> srv(new Server());
+    std::shared_ptr<Server> srv(new Server(config->Logging()));
     std::function<void(void)> stopServer = [srv]()
     {
         std::string msg;

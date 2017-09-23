@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
-
+cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_COMPILER g++)
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
@@ -9,8 +8,9 @@ ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 find_package(Boost 1.58.0 COMPONENTS system log thread  REQUIRED)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
-    add_executable(main src/main.cpp src/server.h src/acceptor.h 
-        src/service.h src/config.h src/application.h src/application.cpp src/log.h src/log.cpp src/daemon.h)
+    add_executable(main src/main.cpp src/server.h src/server.cpp  src/acceptor.h src/acceptor.cpp 
+        src/service.h src/service.cpp  src/config.h src/config.cpp src/application.h 
+        src/application.cpp src/log.h src/log.cpp src/daemon.h)
     target_link_libraries(main ${Boost_LIBRARIES})
     target_link_libraries (main ${CMAKE_THREAD_LIBS_INIT})
 endif()

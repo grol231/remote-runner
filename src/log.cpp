@@ -10,7 +10,7 @@ Logging::Statistic::Statistic():
     DownloadedBytes(0),
     UploadedBytes(0)
     {} 
-void Logging::InitializeLog()
+void Logging::InitializeLog(bool logging)
 {
       
     logging::add_file_log(
@@ -38,6 +38,7 @@ std::string Logging::ToString(const LogRecord& record)
 };
 std::string Logging::ToString(const Statistic& s)
 {
+    std::cout << "Logging::ToString(Statistic)" << std::endl;
     std::string str;
     str += "ConnectID #" + std::to_string(s.ConnectID) + "\n";
     str += "Command Statistic:\n    Terminations = "; 

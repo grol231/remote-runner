@@ -10,6 +10,7 @@
 #include "config.h"
 #include "daemon.h"
 
+
 class Application
 {
 public:
@@ -22,5 +23,6 @@ public:
     ~Application(){}
     void Initialize(std::shared_ptr<Config> config);
     void DoInitialize(std::shared_ptr<Config> config);
+    const unsigned int DEFAULT_THREAD_POOL_SIZE = 2;
 };
 #endif

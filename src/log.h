@@ -47,8 +47,8 @@ struct Statistic
     unsigned long long int DownloadedBytes;
     unsigned long long int UploadedBytes;
 };
-static void InitializeLog();
-static std::string ToString(const LogRecord& record);
-static std::string ToString(const Statistic& s);
+void InitializeLog(bool logging);
+std::string ToString(const LogRecord& record);
+std::string ToString(const Statistic& s);
 };
 #endif
