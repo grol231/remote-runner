@@ -11,23 +11,17 @@ Service::Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,
         timer_(ios_),
         statistic_(),
         log_(log),
-        logging_()
+        logging_(logging)
 {
     statistic_.ConnectID = connect_id;
 }
 Service::~Service()
 {
-    std::cout << "Destroy service!" << std::endl;
     if(logging_)
     {
-        std::fstream f;
-        f.open("statistic.txt", std::fstream::in);
-        if(f.fail())
-        {
-            f.open("statistic.txt", std::fstream::in | std::fstream::out | std::fstream::trunc);
-        }
-        f <<  Logging::ToString(statistic_);
-        f.close();
+        std::ofstream fout("statistic.txt", std::ios_base::app);
+        fout << Logging::ToString(statistic_);
+        fout.close();
     }        
 }
 void Service::StartHandling(std::shared_ptr<Config> config)
@@ -102,6 +96,8 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
     record.Command = args[0];
     record.Condition = "start";        
     auto list = config->AllowCommands();
+    if(list.empty())
+        std::cout << "List is empty!" << std::endl;
     if(!list.empty() &&
         list.end() 
             == 
@@ -110,9 +106,9 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
         std::string message = "not allow command!";
         record.Result = "fail";
         record.Note = message; 
-        ++statistic_.FailedLaunches;//?????
+        ++statistic_.FailedLaunches;
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-        return message;
+        return message + "\n";
     }
     pid_t pid = fork();
     int err(0);
@@ -121,9 +117,9 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
         std::string message = ProcessError(errno);
         record.Result = "fail";
         record.Note = message; 
-        ++statistic_.FailedLaunches;//?????
+        ++statistic_.FailedLaunches;
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-        return record.Result;
+        return record.Result + "\n";
     }
     if(!pid)
     {
@@ -149,7 +145,7 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
     }
     if(logging_)    
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
-    return record.Result;
+    return record.Result+"\n";
 }
 char** Service::CreateArgv(const std::vector<std::string>& args) const {
     char** argv = new char*[args.size() + 1];

@@ -1,5 +1,5 @@
 #include "log.h"
-
+#include <fstream>
 
 Logging::Statistic::Statistic():
     ConnectID(0),
@@ -26,6 +26,8 @@ void Logging::InitializeLog(bool logging)
     (   
         logging::trivial::severity >= logging::trivial::info
     );
+    std::ofstream fout("statistic.txt"); //clean file
+    fout.close();
 };
 std::string Logging::ToString(const LogRecord& record)
 {
@@ -38,9 +40,8 @@ std::string Logging::ToString(const LogRecord& record)
 };
 std::string Logging::ToString(const Statistic& s)
 {
-    std::cout << "Logging::ToString(Statistic)" << std::endl;
     std::string str;
-    str += "ConnectID #" + std::to_string(s.ConnectID) + "\n";
+    str += "\nConnectID #" + std::to_string(s.ConnectID) + "\n";
     str += "Command Statistic:\n    Terminations = "; 
     str += std::to_string(s.Terminations);
     str += "\n    Forced Terminations = ";

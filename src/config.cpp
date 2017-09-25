@@ -17,9 +17,10 @@ Config::Config(int argc, char* argv[])
             is_daemon_ = false;
         }
         if(std::string::npos != command.find("-path="))
-        {                
+        {                           
             std::string path(command,
                 command.find('=')+1, command.size()-command.find('=')-1);                
+            std::cout << path << std::endl;
             ReadConfigFile(path);
         }
         if(command.compare("-log") == 0)
@@ -72,6 +73,7 @@ void Config::ReadConfigFile(std::string& path)
         {
             if(command.size() <= 1)
                 continue;
+            std::cout << command << std::endl;
             allow_commands_.push_back(command);
         }
         myfile.close();

@@ -8,9 +8,9 @@ ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK)
 find_package(Boost 1.58.0 COMPONENTS system log thread  REQUIRED)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
-    add_executable(main src/main.cpp src/server.h src/server.cpp  src/acceptor.h src/acceptor.cpp 
+    add_executable(rrd src/main.cpp src/server.h src/server.cpp  src/acceptor.h src/acceptor.cpp 
         src/service.h src/service.cpp  src/config.h src/config.cpp src/application.h 
         src/application.cpp src/log.h src/log.cpp src/daemon.h)
-    target_link_libraries(main ${Boost_LIBRARIES})
-    target_link_libraries (main ${CMAKE_THREAD_LIBS_INIT})
+    target_link_libraries(rrd ${Boost_LIBRARIES})
+    target_link_libraries (rrd ${CMAKE_THREAD_LIBS_INIT})
 endif()

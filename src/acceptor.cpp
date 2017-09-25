@@ -1,4 +1,5 @@
 #include "acceptor.h"
+
 Acceptor::Acceptor(boost::asio::io_service& ios,
                    src::severity_logger<logging::trivial::severity_level>& log,
                    std::shared_ptr<Config> config)

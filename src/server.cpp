@@ -10,7 +10,7 @@ Server::~Server()
 {
 }
 void Server::Start(std::shared_ptr<Config> config,
-    unsigned int thread_pool_size)
+                   unsigned int thread_pool_size)
 {
     assert(thread_pool_size > 0);
     acceptor_.reset(new Acceptor(ios_, log_, config));
