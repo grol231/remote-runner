@@ -1,12 +1,22 @@
+#include <signal.h>
+#include <unistd.h>
+#include <errno.h>
+#include <memory>
+#include <iostream>
 #include "service.h"
 
-Service::Service(std::shared_ptr<boost::asio::ip::tcp::socket> sock,     
-                 boost::asio::io_service& ios,
+using namespace std;
+using namespace boost::asio;
+
+namespace Application
+{
+Service::Service(shared_ptr<ip::tcp::socket> sock,     
+                 io_service& ios,
                  unsigned long long int connect_id,
                  src::severity_logger<logging::trivial::severity_level>& log,
                  bool logging) :
         sock_(sock),
-        buffer_(std::make_shared<boost::asio::streambuf>()),                   
+        buffer_(make_shared<boost::asio::streambuf>()),
         ios_(ios),
         timer_(ios_),
         statistic_(),
@@ -19,21 +29,21 @@ Service::~Service()
 {
     if(logging_)
     {
-        std::ofstream fout("statistic.txt", std::ios_base::app);
+        ofstream fout("statistic.txt", ios_base::app);
         fout << Logging::ToString(statistic_);
         fout.close();
     }        
 }
-void Service::StartHandling(std::shared_ptr<Config> config)
+void Service::StartHandling(shared_ptr<Config> config)
 {
-   std::weak_ptr<Service> weakSelf = shared_from_this();
+   weak_ptr<Service> weakSelf = shared_from_this();
    handling_ = [weakSelf, config](){
-       std::shared_ptr<Service> self = weakSelf.lock();
-       boost::asio::async_read_until(*self->sock_.get(),
+       shared_ptr<Service> self = weakSelf.lock();
+       async_read_until(*self->sock_.get(),
            *self->buffer_.get(),
            '\n',
            [self, config](const boost::system::error_code& ec,
-                          std::size_t bytes_transferred)
+                          size_t bytes_transferred)
           { 
                  if(0 == ec)
                  {
@@ -46,47 +56,47 @@ void Service::StartHandling(std::shared_ptr<Config> config)
                  }
                  else
                  {
-                    std::cout << "Async operation error!" << std::endl;
+                    cout << "Async operation error!" << endl;
                  }
           }
        );
    };
    handling_();
 }
-void Service::OnRequestReceived(std::size_t bytes_transferred,
-                                std::shared_ptr<Config> config)
+void Service::OnRequestReceived(size_t bytes_transferred,
+                                shared_ptr<Config> config)
 {
     statistic_.DownloadedBytes += bytes_transferred;
     response_ = ProcessRequest(buffer_, config);
-    boost::asio::async_write(*sock_.get(),
-        boost::asio::buffer(response_),
+    async_write(*sock_.get(),
+        	buffer(response_),
         [this](const boost::system::error_code& ec,
-            std::size_t bytes_transferred)
+            	size_t bytes_transferred)
         {
             OnResponseSent(ec, bytes_transferred);
         }
     );
 }
 void Service::OnResponseSent(const boost::system::error_code& ec,
-                             std::size_t bytes_transferred)
+                             size_t bytes_transferred)
 {
     if (ec != 0)
     {
-        std::cout << "Error occured! Error code = "
+        cout << "Error occured! Error code = "
             << ec.value()
             << ". Message: " << ec.message();
     }
     statistic_.UploadedBytes += bytes_transferred;
 }
 
-std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buffer,
-                                    std::shared_ptr<Config> config)
+string Service::ProcessRequest(shared_ptr<boost::asio::streambuf> buffer,
+                                    shared_ptr<Config> config)
 {
-    std::istream is(buffer.get());
-    std::vector<std::string> args;
+    istream is(buffer.get());
+    vector<string> args;
     while(is)
     {
-        std::string cmd;
+        string cmd;
         is >> cmd;         
         if(cmd.empty())
             break;            
@@ -97,13 +107,13 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
     record.Condition = "start";        
     auto list = config->AllowCommands();
     if(list.empty())
-        std::cout << "List is empty!" << std::endl;
+        cout << "List is empty!" << std::endl;
     if(!list.empty() &&
         list.end() 
             == 
-        std::find(list.begin(), list.end(), args[0]))
+        find(list.begin(), list.end(), args[0]))
     {
-        std::string message = "not allow command!";
+        string message = "not allow command!";
         record.Result = "fail";
         record.Note = message; 
         ++statistic_.FailedLaunches;
@@ -114,7 +124,7 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
     int err(0);
     if(pid < 0)
     {
-        std::string message = ProcessError(errno);
+        string message = ProcessError(errno);
         record.Result = "fail";
         record.Note = message; 
         ++statistic_.FailedLaunches;
@@ -134,7 +144,7 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
         record.Result = "success";
         size_t num = timer_.expires_from_now(config->Timeout());
         if(0!=num)
-            std::cout << "Too late! Timer already expires!" <<  std::endl;
+            cout << "Too late! Timer already expires!" <<  endl;
         timer_.async_wait([this,pid](const boost::system::error_code& ec){
             unsigned int result = kill(pid,SIGKILL);
             if(result == 0)                
@@ -147,7 +157,7 @@ std::string Service::ProcessRequest(std::shared_ptr<boost::asio::streambuf> buff
         BOOST_LOG_SEV(log_,logging::trivial::info) << Logging::ToString(record);
     return record.Result+"\n";
 }
-char** Service::CreateArgv(const std::vector<std::string>& args) const {
+char** Service::CreateArgv(const vector<string>& args) const {
     char** argv = new char*[args.size() + 1];
     for (size_t i = 0; i < args.size(); ++i) {
         argv[i] = new char[args[i].length() + 1];
@@ -156,9 +166,9 @@ char** Service::CreateArgv(const std::vector<std::string>& args) const {
     argv[args.size()] = nullptr;
     return argv;
 }
-std::string Service::ProcessError(int err)
+string Service::ProcessError(int err)
 {
-    std::string result;
+    string result;
     switch(err)
     {
         case EAGAIN:
@@ -172,4 +182,5 @@ std::string Service::ProcessError(int err)
             result = "Uknown error code.";
     }
     return result;
+}
 }

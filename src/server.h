@@ -8,6 +8,8 @@
 #include "acceptor.h"
 #include "log.h"
 
+namespace Application
+{
 class Server
 {
 public:
@@ -16,7 +18,6 @@ public:
     Server& operator=(const Server&) = delete;
     Server(Server&&) = delete;
     Server operator=(const Server&&) = delete;
-    ~Server();
     void Start(std::shared_ptr<Config> config, unsigned int thread_pool_size);
     void Stop();
 private:
@@ -26,4 +27,5 @@ private:
     std::vector<std::unique_ptr<std::thread>> thread_pool_;
     src::severity_logger<logging::trivial::severity_level> log_;
 };
+}
 #endif

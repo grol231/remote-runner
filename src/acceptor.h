@@ -1,20 +1,24 @@
 #ifndef __Acceptor_H__
 #define __Acceptor_H__
 
-#include <iostream>
 #include <memory>
 #include <atomic>
 #include <boost/asio.hpp>
 #include "service.h"
 #include "log.h"
 
+namespace Application
+{
 class Acceptor
 {
 public:
     Acceptor(boost::asio::io_service& ios,
              src::severity_logger<logging::trivial::severity_level>& log,
              std::shared_ptr<Config> config);
-    ~Acceptor();
+    Acceptor(const Acceptor&) = delete;
+    Acceptor& operator=(const Acceptor&) = delete;
+    Acceptor(Acceptor&&) = delete;
+    Acceptor operator=(const Acceptor&&) = delete;
     void Start();
     void Stop();
 private:
@@ -24,9 +28,10 @@ private:
 
     boost::asio::io_service& ios_;
     boost::asio::ip::tcp::acceptor acceptor_;
-    std::atomic<bool> isStopped_;
+    std::atomic<bool> is_stopped_;
     unsigned long long int connect_counter_;
     src::severity_logger<logging::trivial::severity_level>& log_;
     std::shared_ptr<Config> config_;
 };
+}
 #endif

@@ -1,22 +1,17 @@
 #ifndef __Service_H__
 #define __Service_H__
 
-#include <signal.h>
-#include <unistd.h>
-#include <errno.h>
-#include <iostream>
-#include <thread>
 #include <memory>
 #include <string>
 #include <chrono>
 #include <boost/asio.hpp>
-#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/error.hpp>
-#include <boost/algorithm/string.hpp>
 #include "config.h"
 #include "log.h"
 
+namespace Application
+{
 class Service : public std::enable_shared_from_this<Service>
 {
 public:
@@ -47,4 +42,5 @@ private:
     std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
     std::shared_ptr<boost::asio::streambuf> buffer_;
 };
+}
 #endif

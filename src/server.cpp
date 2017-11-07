@@ -1,15 +1,16 @@
 #include "server.h"
 
+using namespace std;
+
+namespace Application
+{
 Server::Server(bool logging):
     log_()
 {
     Logging::InitializeLog(logging);
     work_.reset(new boost::asio::io_service::work(ios_));
 }
-Server::~Server()
-{
-}
-void Server::Start(std::shared_ptr<Config> config,
+void Server::Start(shared_ptr<Config> config,
                    unsigned int thread_pool_size)
 {
     assert(thread_pool_size > 0);
@@ -17,10 +18,10 @@ void Server::Start(std::shared_ptr<Config> config,
     acceptor_->Start();
     for (unsigned int i = 0; i < thread_pool_size; i++)
     {
-        std::unique_ptr<std::thread> th(
-            new std::thread([this](){ios_.run();})
+        unique_ptr<thread> th(
+            new thread([this](){ios_.run();})
         );
-        thread_pool_.push_back(std::move(th));
+        thread_pool_.push_back(move(th));
     }
 }
 void Server::Stop()
@@ -31,4 +32,5 @@ void Server::Stop()
     {
         th->join();
     }
+}
 }

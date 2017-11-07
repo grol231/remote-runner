@@ -1,6 +1,10 @@
 #include "log.h"
 #include <fstream>
 
+using namespace std;
+
+namespace Application
+{
 Logging::Statistic::Statistic():
     ConnectID(0),
     Launches(0),
@@ -29,33 +33,33 @@ void Logging::InitializeLog(bool logging)
     std::ofstream fout("statistic.txt"); //clean file
     fout.close();
 };
-std::string Logging::ToString(const LogRecord& record)
+string Logging::ToString(const LogRecord& record)
 {
-    return std::string("ConnectID #" + 
-            std::to_string(record.ConnectID) + "\n" +
+    return string("ConnectID #" + 
+            to_string(record.ConnectID) + "\n" +
             "Command : " + record.Command + "\n" + 
             "Condition : " + record.Condition + "\n" +
            "Result : " +  record.Result +"\n"+ 
            "Note : " + record.Note);
 };
-std::string Logging::ToString(const Statistic& s)
+string Logging::ToString(const Statistic& s)
 {
-    std::string str;
-    str += "\nConnectID #" + std::to_string(s.ConnectID) + "\n";
+    string str;
+    str += "\nConnectID #" + to_string(s.ConnectID) + "\n";
     str += "Command Statistic:\n    Terminations = "; 
-    str += std::to_string(s.Terminations);
+    str += to_string(s.Terminations);
     str += "\n    Forced Terminations = ";
-    str += std::to_string(s.ForcedTerminations);
+    str += to_string(s.ForcedTerminations);
     str += "\n    Launches = ";
-    str += std::to_string(s.Launches);
+    str += to_string(s.Launches);
     str += "\n    Failed Launches = ";
-    str += std::to_string(s.FailedLaunches);
+    str += to_string(s.FailedLaunches);
     str += "\nTraffic Statistic:\n    Downlowded Bytes = ";
-    str += std::to_string(s.DownloadedBytes);
+    str += to_string(s.DownloadedBytes);
     str += "\n    Uploaded Bytes = ";
-    str += std::to_string(s.UploadedBytes);
+    str += to_string(s.UploadedBytes);
     str += "\n";
     return str;
 };
-
+}
 

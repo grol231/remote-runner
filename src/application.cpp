@@ -1,16 +1,25 @@
+#include <functional>
+#include <string>
+#include <thread>
+#include "server.h"
+#include "daemon.h"
 #include "application.h"
 
-void Application::Initialize(std::shared_ptr<Config> config)
+using namespace std;
+
+namespace Application
+{
+void Initialize(shared_ptr<Config> config)
 {
     if(config->isDaemon())
-        Daemon([this,config](){DoInitialize(config);});        
+        Daemon::Create([config](){DoInitialize(config);});        
     else
         DoInitialize(config);
 }
-void Application::DoInitialize(std::shared_ptr<Config> config)
+void DoInitialize(shared_ptr<Config> config)
 {
-    std::shared_ptr<Server> srv(new Server(config->Logging()));
-    std::function<void(void)> stopServer = [srv]()
+    shared_ptr<Server> srv(new Server(config->Logging()));
+    function<void(void)> stopServer = [srv]()
     {
         std::string msg;
         while(true)
@@ -23,14 +32,16 @@ void Application::DoInitialize(std::shared_ptr<Config> config)
             }
         }
     };
-    std::unique_ptr<std::thread> th(new std::thread(stopServer));
+    unique_ptr<thread> th(new thread(stopServer));
     unsigned int thread_pool_size =
-        std::thread::hardware_concurrency() * 2;
+        thread::hardware_concurrency() * 2;
     if (thread_pool_size == 0)
     {
         thread_pool_size = DEFAULT_THREAD_POOL_SIZE;
     }
     srv->Start(config, thread_pool_size);
     th->join();
+}
+
 }
 

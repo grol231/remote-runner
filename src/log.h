@@ -1,8 +1,6 @@
 #ifndef __Log_H__
 #define __Log_H__
 
-#include <iostream>
-#include <boost/thread/shared_mutex.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -25,6 +23,8 @@ namespace keywords = boost::log::keywords;
 namespace sinks = boost::log::sinks;
 namespace attrs = boost::log::attributes;
 
+namespace Application
+{
 namespace Logging
 {
 static const char* DEFAULT_LOG_FILE = "log.txt";
@@ -50,5 +50,6 @@ struct Statistic
 void InitializeLog(bool logging);
 std::string ToString(const LogRecord& record);
 std::string ToString(const Statistic& s);
-};
+}
+}
 #endif

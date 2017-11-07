@@ -1,31 +1,33 @@
 #include <iostream>
 #include <memory>
 #include <exception>
+#include <boost/asio/error.hpp>
 #include "config.h"
 #include "application.h"
+
+using namespace std;
 
 int main(int argc, char* argv[])
 {
     try
     {
-        std::shared_ptr<Config> config(new Config(argc, argv));
-        std::unique_ptr<Application> app(std::make_unique<Application>());
-        app->Initialize(config);
+        shared_ptr<Config> config(new Config(argc, argv));
+        Application::Initialize(config);
     }
     catch(boost::system::system_error& e)
     {
-        std::cout << "Error occured! Error code = "
+        cout << "Error occured! Error code = "
 			<< e.code() << ". Message: "
-			<< e.what() << std::endl;
+			<< e.what() << endl;
     }
-    catch(std::exception& e)
+    catch(exception& e)
     {
-        std::cout << "Error occured!"
-        ". Message: "<< e.what() << std::endl;
+        cout << "Error occured!"
+        ". Message: "<< e.what() << endl;
     }
     catch(...)
     {
-        std::cout << "Unkown error occured!" << std::endl;
+        cout << "Unkown error occured!" << endl;
     }
 	return 0;
 }
