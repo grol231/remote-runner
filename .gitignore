@@ -5,6 +5,7 @@
 !/config/config.txt
 !.gitignore
 !CMakeLists.txt
+!TODO.txt
 !/src
 !/src/*.cpp
 !/src/*.h
